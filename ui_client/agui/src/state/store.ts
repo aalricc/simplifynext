@@ -180,9 +180,10 @@ export async function runCampaign(input: CampaignInput) {
   try {
     await cdrAgent.runAgent({
       runId,
+      // No profile here: the server takes it from the session cookie. A
+      // client-supplied profile would be an untrusted tenant claim.
       forwardedProps: {
         week,
-        profile: "maya",
         niche: input.niche,
         city: input.city,
         pause_before_send: input.pauseBeforeSend,

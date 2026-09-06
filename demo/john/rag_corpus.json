@@ -1,0 +1,76 @@
+{
+  "corpus_id": "john_v1",
+  "description": "Retrievable notes about John's past flips, audience and the local secondhand landscape. Served per creator via the MCP retrieve_creator_memory tool.",
+  "documents": [
+    {
+      "id": "post_001",
+      "type": "past_post",
+      "title": "SGD 4 shirt with a collar stain — sold for 45",
+      "posted": "2026-06-09",
+      "platform": "instagram",
+      "views": 28900,
+      "saves": 1600,
+      "notes": "Best performer to date. Showing the stain in the first two seconds is what held people. Comments asked repeatedly how he cleaned it."
+    },
+    {
+      "id": "post_002",
+      "type": "past_post",
+      "title": "Rail restock — six pieces, three sold",
+      "posted": "2026-06-23",
+      "platform": "tiktok",
+      "views": 16400,
+      "saves": 700,
+      "notes": "Strong and repeatable. Naming what did not sell drove more trust than the sales did."
+    },
+    {
+      "id": "post_003",
+      "type": "past_post",
+      "title": "Wardrobe organisation: folding system",
+      "posted": "2026-07-01",
+      "platform": "instagram",
+      "views": 2400,
+      "saves": 30,
+      "notes": "Weak. Dropped off in the first 15 seconds. No follow-up filmed."
+    },
+    {
+      "id": "post_004",
+      "type": "past_post",
+      "title": "Haji Lane thrift run, prices on screen",
+      "posted": "2026-07-19",
+      "platform": "tiktok",
+      "views": 13100,
+      "saves": 520,
+      "notes": "Good. Viewers asked which store the best rail was in — an unanswered content slot."
+    },
+    {
+      "id": "audience_001",
+      "type": "audience_note",
+      "title": "Who actually watches",
+      "notes": "20–32, mostly SG, buying secondhand on a budget. They save flips where condition is shown honestly and distrust polished try-on hauls. Strong negative reaction to invented resale valuations."
+    },
+    {
+      "id": "audience_002",
+      "type": "audience_note",
+      "title": "Comment patterns",
+      "notes": "Two recurring asks: 'how did you get that stain out' and 'which store'. Both are unanswered content slots."
+    },
+    {
+      "id": "brand_001",
+      "type": "brand_note",
+      "title": "Loop Vintage",
+      "notes": "Best-curated rail on Haji Lane, Instagram is stills only, no fitting-room video. Highest-fit partner."
+    },
+    {
+      "id": "brand_002",
+      "type": "brand_note",
+      "title": "Refresh Laundry Co",
+      "notes": "Garment care service in Tiong Bahru with no creator content. Would answer John's most common comment directly."
+    },
+    {
+      "id": "constraint_001",
+      "type": "constraint",
+      "title": "What John will not do",
+      "notes": "No invented resale valuations, no fast-fashion sponsorships, no replicas, no 'flip this for 10x' claims. Budget is SGD 80 a week and he films Mon/Thu/Sat."
+    }
+  ]
+}

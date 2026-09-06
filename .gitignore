@@ -6,3 +6,8 @@ __pycache__/
 *.db
 .venv/
 .uat_pids.txt
+
+# Per-run agent output. The directories are tracked via .gitkeep; what the
+# runs drop in them is not.
+demo/outbox/**/*
+!demo/outbox/**/.gitkeep

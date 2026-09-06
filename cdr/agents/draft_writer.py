@@ -1,6 +1,8 @@
 from typing import Any
 
-from cdr.agents._util import ping, with_span
+from cdr import agui_map
+from cdr.agents._util import artifact, ping, with_span
+from cdr.agents.proposal_generation import _captions
 from cdr.llm import complete_json
 from shared.agent_base import Agent
 
@@ -19,10 +21,18 @@ class DraftWriterAgent(Agent):
                 f"package={pkg}\nmust_fix={state.get('must_fix')}\nrewrite=true",
                 agent=self.name,
             )
-            pkg["hero_script"] = data.get("hero_script", pkg.get("hero_script"))
-            pkg["captions"] = data.get("captions", pkg.get("captions"))
-            pkg["cta"] = data.get("cta", pkg.get("cta"))
-            pkg["sources"] = data.get("sources", pkg.get("sources") or [])
+            # Keep the rewrite inside ContentPackage's shape - a rewrite that
+            # returns captions as a list used to crash the run downstream.
+            pkg["hero_script"] = str(data.get("hero_script") or pkg.get("hero_script") or "")
+            pkg["captions"] = _captions(data.get("captions") or pkg.get("captions"))
+            pkg["cta"] = str(data.get("cta") or pkg.get("cta") or "")
+            pkg["sources"] = [str(s) for s in (data.get("sources") or pkg.get("sources") or [])]
             state["package"] = pkg
+            # A second card, not a replacement: the fail-then-fix is the story,
+            # so v1 has to stay on screen next to v2.
+            version = int(state.get("package_version") or 1) + 1
+            state["package_version"] = version
+            artifact(state, "render_content_package", agui_map.content_package_args(
+                pkg, version=version, changes=list(state.get("must_fix") or [])))
             ping(state, self.name, "loop", "Rewrite applied.", artifact_ref="ContentPackage")
         return state

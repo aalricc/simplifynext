@@ -10,7 +10,7 @@ screen, it does not count.
 | **AG-UI** | `ui_client/agui/` (CopilotKit) + `POST /ag-ui` on 8084 | The artifact drawer. Agent tool calls mount real components — research brief, content package, critique card, email, calendar — not chat text |
 | **OpenTelemetry** | Spans named `{agent}.{pattern}` on every agent | The live agent trace. Each row is a span: agent name, pattern badge, service, summary |
 | **LangGraph** | P2's graphs in the CDR service | Sequential and loop badges — `ResearchPlannerAgent`, the `HookCriticAgent` → `RewriteAgent` loop |
-| **DeepAgents** | `CDRRootAgent`, the root planner | First line of every run: "DeepAgents root … delegating to finder, research, package, outreach subgraphs" |
+| **DeepAgents** | `CDRRootAgent`, the root planner — DeepAgents-*style* (plan → delegate to subgraphs as tools), hand-written on LangGraph, not the `deepagents` package | First line of every run: "DeepAgents root … delegating to finder, research, package, outreach subgraphs" |
 | **Claude Agent SDK** | Optional specialist critic | `FactCheckCriticAgent` (pattern `tool`) |
 | **AWS Bedrock AgentCore** | Deploy target for the recorded demo | Not on screen — deployment target, called out verbally |
 | **Groq** | Local inference for the `llm`-pattern agents | Green `llm` badges: `HookWriterAgent`, `ScriptWriterAgent`, `EmailDraftAgent`, `ReplyClassifierAgent` |
@@ -44,4 +44,9 @@ not gate it.
 The UI never learns whether events came from a fixture file or from P2's live
 agent — both arrive as the same AG-UI SSE stream from `POST /ag-ui`. Going live is
 `USE_FIXTURES=0`, not a rewrite. See [`demo/fixtures/README.md`](demo/fixtures/README.md)
-for the event contract.
+for the event contract and [`cdr/agui_map.py`](cdr/agui_map.py) for the one
+module that holds P2's schemas to it.
+
+If the live CDR stops answering mid-run, the board says so on the trace and
+keeps the events it already drew; if it never answered at all, the run falls
+back to the fixture replay and labels itself. Either way the demo does not hang.

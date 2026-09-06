@@ -6,8 +6,22 @@ python-dotenv>=1.0.1
 langgraph>=0.2.0
 langchain-core>=0.3.0
 langchain-groq>=0.2.0
+# Claude on Amazon Bedrock (LLM_PROVIDER=bedrock). The bedrock extra pulls the
+# boto3/botocore needed to sign requests with the sandbox's temporary keys.
+anthropic[bedrock]>=0.125.0
 sse-starlette>=2.1.0
+
+# Database. Postgres is the target; aiosqlite stays so tests and a keyless
+# local loop can run the same models with DATABASE_URL=sqlite+aiosqlite:///...
+sqlalchemy[asyncio]>=2.0.30
+asyncpg>=0.29.0
+alembic>=1.13.0
 aiosqlite>=0.20.0
+
+# Password hashing. argon2id is the current OWASP first choice.
+argon2-cffi>=23.1.0
+# Multipart form parsing for the signup/login forms.
+python-multipart>=0.0.9
 tzdata>=2024.1
 opentelemetry-api>=1.27.0
 opentelemetry-sdk>=1.27.0

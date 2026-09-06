@@ -1,72 +1,90 @@
+# Only ui_client publishes a port.
+#
+# The five backend services have no authentication of their own -- they trust
+# the signed tenant header that ui_client mints after checking the session
+# cookie (shared/tenant.py). Publishing their ports would let anyone on the
+# host bypass login by calling them directly, so they are reachable only on
+# the compose network. Use `docker compose exec` to poke at them.
+
+x-service: &service
+  image: python:3.11-slim
+  working_dir: /app
+  volumes:
+    - .:/app
+  env_file: .env
+  environment:
+    PYTHONPATH: /app
+    DATABASE_URL: postgresql+asyncpg://creatorloop:creatorloop@db:5432/creatorloop
+  depends_on:
+    db:
+      condition: service_healthy
+    migrate:
+      condition: service_completed_successfully
+
 services:
-  mcp:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: creatorloop
+      POSTGRES_USER: creatorloop
+      POSTGRES_PASSWORD: creatorloop
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      # Published so you can attach psql / a GUI from the host. Drop this line
+      # if the host is shared.
+      - "5432:5432"
+    healthcheck:
+      # Without this the services race Postgres on boot and die on first query.
+      test: ["CMD-SHELL", "pg_isready -U creatorloop -d creatorloop"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  # Runs `alembic upgrade head` once, then exits. Every service waits for it to
+  # succeed, so no service can ever start against a stale schema.
+  migrate:
     image: python:3.11-slim
     working_dir: /app
     volumes:
       - .:/app
-    command: python -m uvicorn mcp.server:app --host 0.0.0.0 --port 8085 --reload
-    ports:
-      - "8085:8085"
     env_file: .env
     environment:
       PYTHONPATH: /app
+      DATABASE_URL: postgresql+asyncpg://creatorloop:creatorloop@db:5432/creatorloop
+    command: >
+      sh -c "pip install --quiet -r requirements.txt && alembic upgrade head"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  mcp:
+    <<: *service
+    command: python -m uvicorn mcp.server:app --host 0.0.0.0 --port 8085 --reload
 
   opportunity_finder:
-    image: python:3.11-slim
-    working_dir: /app
-    volumes:
-      - .:/app
+    <<: *service
     command: python -m uvicorn opportunity_finder.app:app --host 0.0.0.0 --port 8081 --reload
-    ports:
-      - "8081:8081"
-    env_file: .env
-    environment:
-      PYTHONPATH: /app
 
   pipeline_manager:
-    image: python:3.11-slim
-    working_dir: /app
-    volumes:
-      - .:/app
+    <<: *service
     command: python -m uvicorn pipeline_manager.app:app --host 0.0.0.0 --port 8082 --reload
-    ports:
-      - "8082:8082"
-    env_file: .env
-    environment:
-      PYTHONPATH: /app
 
   engagement_listener:
-    image: python:3.11-slim
-    working_dir: /app
-    volumes:
-      - .:/app
+    <<: *service
     command: python -m uvicorn engagement_listener.app:app --host 0.0.0.0 --port 8083 --reload
-    ports:
-      - "8083:8083"
-    env_file: .env
-    environment:
-      PYTHONPATH: /app
 
   cdr:
-    image: python:3.11-slim
-    working_dir: /app
-    volumes:
-      - .:/app
+    <<: *service
     command: python -m uvicorn cdr.app:app --host 0.0.0.0 --port 8084 --reload
-    ports:
-      - "8084:8084"
-    env_file: .env
-    environment:
-      PYTHONPATH: /app
 
+  # The only public entry point. Validates the session cookie and mints the
+  # signed tenant header for everything behind it.
   ui_client:
-    image: python:3.11-slim
-    working_dir: /app
-    volumes:
-      - .:/app
+    <<: *service
     command: python -m uvicorn ui_client.app:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
-    env_file: .env
-    environment:
-      PYTHONPATH: /app
+
+volumes:
+  pgdata:

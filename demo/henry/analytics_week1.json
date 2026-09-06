@@ -1,0 +1,26 @@
+{
+  "week": 1,
+  "posts": [
+    {
+      "id": "post-repack",
+      "title": "SGD 80 Base Set repack verdict",
+      "views": 38400,
+      "saves": 1900,
+      "avg_watch_pct": 68
+    },
+    {
+      "id": "post-grading",
+      "title": "12 grading submissions revealed",
+      "views": 19700,
+      "saves": 720,
+      "avg_watch_pct": 57
+    },
+    {
+      "id": "post-deck",
+      "title": "Beginner deck building",
+      "views": 3600,
+      "saves": 55,
+      "avg_watch_pct": 24
+    }
+  ]
+}

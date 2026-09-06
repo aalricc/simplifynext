@@ -1,9 +1,17 @@
 from typing import Any
 
-from cdr.agents._util import ping, with_span
+from cdr import agui_map
+from cdr.agents._util import panel, ping, with_span
 from cdr.llm import complete_json
 from cdr import tools
 from shared.agent_base import Agent
+
+
+def _mark(state: dict[str, Any], opps: list, status: str) -> None:
+    """Move cards across the kanban as the run advances."""
+    updates = [(o.get("id"), status) for o in opps if isinstance(o, dict) and o.get("id")]
+    if updates:
+        panel(state, "pipeline", agui_map.pipeline(updates)["value"])
 
 
 class CDRRootAgent(Agent):
@@ -28,6 +36,7 @@ class CDRRootAgent(Agent):
                 chosen = sorted(opps, key=lambda o: int(o.get("score") or 0), reverse=True)[:2]
             state["selected"] = chosen
             ping(state, self.name, "custom", f"Selected {[c.get('id') for c in chosen]}")
+            _mark(state, chosen, "researched")
 
             if not state.get("opportunities"):
                 await tools.find_opportunities(state)
@@ -51,6 +60,7 @@ class CDRRootAgent(Agent):
                 await tools.research_opportunity(state)
                 await tools.generate_proposal(state)
                 await tools.run_qa(state)
+                _mark(state, [opp], "packaged")
                 pause = str(state.get("pause_before_send") or "").lower() in ("1", "true")
                 if pause:
                     ping(state, self.name, "custom", "PAUSE_BEFORE_SEND — drafts only.", status="awaiting_send")

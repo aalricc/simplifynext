@@ -1,0 +1,42 @@
+{
+  "profile_id": "henry",
+  "name": "Henry Lim",
+  "handle": "@henrypulls",
+  "demo_niche_keywords": ["pokemon", "pokémon", "tcg", "trading card", "card opening"],
+  "city": "Singapore",
+  "niche": "Pokémon card openings, pulls and grading",
+  "platforms": ["tiktok", "youtube"],
+  "followers": { "tiktok": 12300, "youtube": 4800 },
+  "median_views": 9100,
+  "posting_cadence_actual": "2 per week, bunched at weekends",
+  "posting_cadence_goal": "3 per week, same 3 slots",
+  "goals": [
+    "3 videos per week on a repeatable schedule",
+    "first sponsored break with a local card shop",
+    "stop buying product he cannot film"
+  ],
+  "pain": "Sealed product is expensive and the good pulls are luck. Every week he decides what to open on the day he films, so half the ideas never get made and the spend is unplanned.",
+  "voice": {
+    "tone": "fast, superstitious as a bit, genuinely delighted when it hits",
+    "language": "English with Singlish seasoning (aiyo, confirm, steady) - never forced",
+    "signature": "opens on a folding table in a HDB living room, one hand cam, never re-films a pull",
+    "avoid": [
+      "gambling framing aimed at kids",
+      "made-up pull rates",
+      "fake reaction edits",
+      "'this pack is guaranteed' language"
+    ]
+  },
+  "constraints": {
+    "filming_days": ["wed", "fri", "sun"],
+    "budget_sgd_per_week": 120,
+    "no_go": ["unlicensed reprints", "crypto and NFT cards", "loot-box style giveaways for under-18s"]
+  },
+  "brand_targets": [
+    { "name": "Orchard Card Bar", "area": "Somerset", "why": "busy shop floor, zero short-form" },
+    { "name": "SleeveWorks SG", "area": "online", "why": "sells sleeves and toploaders, no creator content" },
+    { "name": "GradeHouse Asia", "area": "Paya Lebar", "why": "new grading service, needs trust-building content" }
+  ],
+  "best_performing": ["chase card pulls", "grading reveals", "vintage pack openings", "price check reactions"],
+  "worst_performing": ["deck building tutorials", "competitive meta breakdowns", "unboxing accessories"]
+}

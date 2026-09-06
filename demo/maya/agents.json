@@ -1,0 +1,165 @@
+{
+  "_note": "Canned output per named agent for USE_FIXTURES=1. Entries with _rules branch on the prompt; see shared/fixtures.py.",
+
+  "NicheQueryAgent": {
+    "queries": [
+      "easy laksa weeknight Singapore",
+      "leftover stock laksa tiktok",
+      "laksa paste brand Singapore short form",
+      "katong laksa correct order reel",
+      "air fryer otah hostel kitchen",
+      "home chendol hawker how to",
+      "singapore hawker stall collab",
+      "hawker sauce brand weak instagram"
+    ]
+  },
+  "TrendHarvesterAgent": { "_seed": "TrendHarvesterAgent" },
+  "BrandGapAgent": { "_seed": "BrandGapAgent" },
+  "CollabScoutAgent": { "_seed": "CollabScoutAgent" },
+  "OpportunityClusterAgent": {
+    "clusters": [
+      { "theme": "weeknight laksa / leftover stock", "ids": ["opp-laksa-weeknight", "opp-brand-gap-laksa-lab"] },
+      { "theme": "hostel hawker hacks", "ids": ["opp-trend-otah-airfryer"] },
+      { "theme": "local stall collab", "ids": ["opp-collab-hawker-auntie"] },
+      { "theme": "dessert (weak)", "ids": ["opp-gap-dessert"] }
+    ]
+  },
+  "OpportunityScorerAgent": { "_seed": "*" },
+  "OpportunityFinderRoot": { "ok": true },
+
+  "OpportunityClerkAgent": { "ok": true, "action": "upsert" },
+  "QualificationAgent": {
+    "_rules": [
+      { "if_all": ["brand"], "if_any": ["laksa lab", "88"], "then": { "label": "hot", "reason": "Brand-gap plus high fit score." } },
+      { "if_any": ["chendol", "dessert", "opp-gap-dessert"], "then": { "label": "cold", "reason": "Dessert how-tos underperform in Maya's niche." } },
+      { "if_any": ["91", "laksa-weeknight"], "then": { "label": "hot", "reason": "Top trend, hostel-friendly hawker hack." } }
+    ],
+    "_default": { "label": "warm", "reason": "Solid niche fit." }
+  },
+  "FollowUpPlannerAgent": {
+    "actions": [
+      { "when": "+2d", "channel": "email", "note": "If Laksa Lab is silent, nudge with the leftover-stock reel still attached." }
+    ],
+    "meeting_ask": true
+  },
+  "CalendarAssistantAgent": {
+    "slots": [
+      { "kind": "post", "weekday": "Tue", "time": "19:30", "title": "Weeknight leftover-stock laksa" },
+      { "kind": "post", "weekday": "Thu", "time": "19:30", "title": "Air-fryer otah hostel kitchen" },
+      { "kind": "post", "weekday": "Sat", "time": "11:00", "title": "Laksa Lab paste — what I'd buy" },
+      { "kind": "followup", "weekday": "Wed", "time": "10:00", "title": "Follow up Laksa Lab" }
+    ]
+  },
+  "StatusTrackerAgent": {
+    "_rules": [
+      { "if_any": ["engaged", "interested"], "then": { "ok": true, "status": "engaged" } },
+      { "if_any": ["meeting"], "then": { "ok": true, "status": "meeting" } },
+      { "if_any": ["lost"], "then": { "ok": true, "status": "lost" } },
+      { "if_any": ["packaged"], "then": { "ok": true, "status": "packaged" } },
+      { "if_any": ["researched"], "then": { "ok": true, "status": "researched" } }
+    ],
+    "_default": { "ok": true, "status": "outreached" }
+  },
+
+  "EngagementIngestAgent": { "ok": true, "normalized": true },
+  "ReplyClassifierAgent": {
+    "_rules": [
+      { "if_any": ["interested", "3-post", "15-min call", "hop on", "loved"], "then": { "label": "interested", "opportunity_id": "opp-brand-gap-laksa-lab", "next_status": "engaged" } },
+      { "if_any": ["unsubscribe", "not interested"], "then": { "label": "not_interested", "opportunity_id": "{oid}", "next_status": "lost" } },
+      { "if_any": ["meeting", "calendar"], "then": { "label": "meeting", "opportunity_id": "{oid}", "next_status": "meeting" } }
+    ],
+    "_default": { "label": "noise", "opportunity_id": null, "next_status": null }
+  },
+  "PerformanceAdaptAgent": {
+    "wins": ["Noodle / hawker how-tos (weekday laksa) win on saves and watch time."],
+    "losses": ["Dessert how-tos (home chendol) drop off; low watch time."],
+    "next_bias": [
+      "Prefer hawker how-tos and leftover-stock angles.",
+      "Deprioritize dessert how-tos.",
+      "Keep Laksa Lab brand-gap hot."
+    ]
+  },
+
+  "ResearchLeadAgent": {
+    "plan": ["audience", "peers", "presence", "pain"],
+    "why": "Maya's saves cluster on hostel-friendly hawker hacks."
+  },
+  "AudienceResearchAgent": {
+    "audience_insight": "20–30s in SG want weeknight hawker flavour without a 40-min simmer. High save intent on 'leftover stock' hacks."
+  },
+  "PeerCreatorAnalysisAgent": {
+    "peer_moves": "Peer hawker accounts over-index tourist Katong shots. Gap: hostel kitchen / leftover stock angles."
+  },
+  "PlatformPresenceAgent": {
+    "platform_presence": "Laksa Lab has a shopfront and almost no short-form. Maya can own the recipe slot they are not filling."
+  },
+  "PainPointAgent": {
+    "pain_points": "Long cook time, fear of 'inauthentic' laksa, unsourced health claims that get Maya in trouble."
+  },
+
+  "ProposalGenerationAgent": {
+    "opportunity_id": "{oid}",
+    "week_plan": [
+      { "hook": "Weeknight laksa from leftover stock in 15 min", "format": "talking-head + overhead cook", "platform": "tiktok", "posting_slot": "Tue 19:30 SGT" },
+      { "hook": "Air-fryer otah for hostel kitchens", "format": "quick cuts", "platform": "tiktok", "posting_slot": "Thu 19:30 SGT" },
+      { "hook": "Laksa Lab paste — what I'd actually buy", "format": "shelf + cook", "platform": "instagram", "posting_slot": "Sat 11:00 SGT" }
+    ],
+    "hero_script": "Leftover chicken stock in the fridge? That's a 15-minute laksa, not a sad soup. I'm Maya. This is the Katong-style coconut hit without the queue. This bowl is 320 calories so it's 'healthy'. Grab the rempah, leftover stock, and a handful of bee hoon. Tell me who still gates laksa behind a Sunday.",
+    "captions": {
+      "tiktok": "15-min leftover-stock laksa. Katong vibe, hostel kitchen. #sgfood",
+      "instagram": "Weeknight laksa from leftover stock. Named ingredient: rempah + bee hoon."
+    },
+    "cta": "Save this for the next leftover-stock night. Brand friends: Laksa Lab, DMs open.",
+    "sources": []
+  },
+  "DraftWriterAgent": {
+    "hero_script": "Leftover chicken stock in the fridge? That's a 15-minute laksa, not a sad soup. I'm Maya. Katong-style coconut hit, hostel stove, no queue. Rempah, leftover stock, bee hoon. I don't do mystery calorie claims — just a bowl that tastes like the stall. Tell me who still gates laksa behind a Sunday.",
+    "captions": {
+      "tiktok": "15-min leftover-stock laksa. Rempah + bee hoon. #sgfood",
+      "instagram": "Weeknight laksa. Named ingredients only. No unsourced health claims."
+    },
+    "cta": "Save this. Laksa Lab — if you want the paste in shot, say the word.",
+    "sources": ["Maya kitchen test", "Katong-style method (home)"]
+  },
+  "FactCheckerAgent": {
+    "_rules": [
+      { "if_any": ["320 calories"], "then": { "verdict": "fail", "issues": ["Unsourced calorie claim (320 calories)."], "must_fix": ["cite or remove calories"] } },
+      { "if_any": ["calorie"], "if_none": ["i don't do mystery calorie"], "then": { "verdict": "fail", "issues": ["Unsourced calorie claim (320 calories)."], "must_fix": ["cite or remove calories"] } }
+    ],
+    "_default": { "verdict": "pass", "issues": [], "must_fix": [] }
+  },
+  "VoiceCritiqueAgent": {
+    "_rules": [
+      { "if_all": ["maya"], "if_any": ["rempah", "bee hoon", "laksa"], "then": { "verdict": "pass", "issues": [], "must_fix": [] } }
+    ],
+    "_default": { "verdict": "fail", "issues": ["Voice missing named ingredient / Maya warmth."], "must_fix": ["name rempah or stall-style ingredient"] }
+  },
+
+  "OutreachStrategyAgent": {
+    "channel_order": ["email", "dm", "call_script"],
+    "angle": "Maya fills Laksa Lab's missing short-form with a leftover-stock weeknight recipe.",
+    "to": "hello@laksalab.sg"
+  },
+  "OutreachScriptAgent": {
+    "channel": "call_script",
+    "to": "Laksa Lab",
+    "subject": "",
+    "body": "30s: Hi, I'm Maya — hawker-style TikTok in Singapore. Your paste is strong, your short-form is quiet. I have a 15-min leftover-stock laksa ready. 3-post trial next month?"
+  },
+  "PitchEmailAgent": {
+    "channel": "email",
+    "to": "hello@laksalab.sg",
+    "subject": "Maya x Laksa Lab — 3-post leftover-stock laksa trial",
+    "body": "Hi Laksa Lab team,\n\nI'm Maya Tan. I cook hawker-style food for 20–30s in Singapore who miss stall flavour on a weeknight. Your paste is the product; the feed is the gap. I'd like a 3-post trial: leftover-stock laksa, hostel otah, and an honest 'what I'd actually buy' shelf clip. No unsourced health claims.\n\n15 min call this week?\nMaya"
+  },
+  "CDRRootAgent": {
+    "plan": [
+      "select top opportunities",
+      "research in parallel",
+      "package + critique loop",
+      "outreach",
+      "persist_and_schedule"
+    ],
+    "selected_ids": ["opp-laksa-weeknight", "opp-brand-gap-laksa-lab"]
+  }
+}

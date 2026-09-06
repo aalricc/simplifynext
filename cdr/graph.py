@@ -12,26 +12,33 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
+from cdr import agui_map
 from cdr.agents.root import CDRRootAgent
 from cdr.mcp_client import find_opportunities
-from cdr.runtime import emit, finish
+from cdr.runtime import emit, emit_custom, finish
 
 
 async def load_opportunities(state: dict[str, Any]) -> dict[str, Any]:
-    emit(str(state.get("run_id", "")), "OpportunityLoader", "tool", "Load opportunities (P1 or Maya seed).")
+    run_id = str(state.get("run_id", ""))
+    emit(run_id, "OpportunityLoader", "tool", "Load opportunities (P1 or Maya seed).")
     if state.get("opportunities"):
         return state
     profile = state.get("profile") or {}
     data = await find_opportunities(
         {
-            "profile_id": profile.get("id", "maya"),
-            "niche": profile.get("niche", "singapore hawker food"),
-            "city": profile.get("city", "Singapore"),
+            # No persona defaults. A run that lost its creator must fail
+            # visibly, not search Singapore hawker food for whoever asked.
+            "profile_id": profile.get("id", ""),
+            "niche": profile.get("niche", ""),
+            "city": profile.get("city", ""),
             "limit": 8,
             "profile": profile,
         }
     )
     state["opportunities"] = data.get("opportunities") or []
+    if state["opportunities"]:
+        emit_custom(run_id, "opportunities",
+                    agui_map.opportunities(state["opportunities"], run_id)["value"])
     return state
 
 

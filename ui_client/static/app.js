@@ -10,32 +10,141 @@
   const { TOOLS, fallback, esc } = window.CL;
   const $ = (id) => document.getElementById(id);
 
-  /* Pipeline statuses are owned by Pipeline Manager (8082). Mirror of the
+  const EMPTY_ARTIFACT_LIST = '<div class="empty-art"><span>◫</span><p>Scripts, captions and messages land here as they’re written.</p></div>';
+  const EMPTY_ARTIFACT_DETAIL = '<div class="empty-art"><span>◫</span><p>Select an item on the left to see the full draft.</p></div>';
+
+  /* Pipeline statuses are owned by Pipeline Manager. Mirror of the
      OpportunityStatus enum in shared/schemas.py - if P3 changes it, change
-     this list and nothing else. */
-  const STATUSES = [
-    ["new", "New"], ["qualified", "Qualified"], ["packaged", "Packaged"],
-    ["scheduled", "Scheduled"], ["published", "Published"],
-    ["outreach_sent", "Outreach"], ["replied", "Replied"],
-    ["negotiating", "Negotiating"], ["won", "Won"], ["lost", "Lost"],
+     this map and nothing else. Each status gets a plain-language label and
+     is bucketed into one of four creator-facing stages for the board. */
+  const STATUS_META = {
+    new:           { label: "New idea",      group: "new" },
+    qualified:     { label: "Reviewed",       group: "ready" },
+    packaged:      { label: "Content ready",  group: "ready" },
+    scheduled:     { label: "Scheduled",      group: "ready" },
+    published:     { label: "Posted",         group: "ready" },
+    outreach_sent: { label: "Reached out",    group: "reaching" },
+    replied:       { label: "They replied",   group: "reaching" },
+    negotiating:   { label: "In talks",       group: "reaching" },
+    won:           { label: "Deal won",       group: "done" },
+    lost:          { label: "Passed",         group: "done" },
+    parked:        { label: "Passed",         group: "done" },
+  };
+  const GROUPS = [
+    ["new", "New ideas"],
+    ["ready", "Getting ready"],
+    ["reaching", "Reaching out"],
+    ["done", "Done"],
   ];
-  const STATUS_ALIAS = { parked: "lost" };
+  const statusLabel = (s) => (STATUS_META[s] && STATUS_META[s].label) || s;
+  const statusGroup = (s) => (STATUS_META[s] && STATUS_META[s].group) || "new";
 
   const state = {
-    runId: null, running: false, nextWeek: 1,
-    opps: new Map(), traces: 0, artifacts: 0, mcp: 0,
+    runId: null, running: false, nextWeek: 1, profileId: null,
+    opps: new Map(), traces: 0, mcp: 0,
     memory: new Map(), inbox: new Map(), startedAt: 0,
-    pendingTools: new Map(),
+    pendingTools: new Map(), oppSignatures: new Map(), contentPreview: [],
+    artifactList: [], selectedArtifactId: null, artifactSeq: 0,
   };
+
+  /* ------------------------------------------------------------------ */
+  /* tabs                                                                 */
+  /* ------------------------------------------------------------------ */
+
+  function positionIndicator(tabEl) {
+    const nav = $("tabs");
+    const indicator = $("tab-indicator");
+    if (!tabEl || !nav) return;
+    const navBox = nav.getBoundingClientRect();
+    const tabBox = tabEl.getBoundingClientRect();
+    indicator.style.width = tabBox.width + "px";
+    indicator.style.transform = `translateX(${tabBox.left - navBox.left}px)`;
+  }
+
+  function goToTab(name, { focus = false } = {}) {
+    const tabBtn = document.querySelector(`.tab[data-tab="${name}"]`);
+    if (!tabBtn) return;
+    document.querySelectorAll(".tab").forEach((b) => {
+      const active = b === tabBtn;
+      b.classList.toggle("active", active);
+      b.setAttribute("aria-selected", active ? "true" : "false");
+      // Roving tabindex: one Tab press enters the tablist, then arrows move
+      // between tabs. Without this every tab is its own tab stop, which is
+      // the behaviour the ARIA tabs pattern explicitly replaces.
+      b.tabIndex = active ? 0 : -1;
+    });
+    if (focus) tabBtn.focus();
+    document.querySelectorAll(".tabpanel").forEach((p) => {
+      const active = p.dataset.tab === name;
+      p.classList.toggle("active", active);
+      if (active) {
+        p.classList.remove("entering");
+        // restart the entrance animation every time the tab is opened
+        void p.offsetWidth;
+        p.classList.add("entering");
+      }
+    });
+    positionIndicator(tabBtn);
+  }
+
+  document.querySelectorAll(".tab").forEach((b) =>
+    b.addEventListener("click", () => goToTab(b.dataset.tab))
+  );
+
+  // Arrow / Home / End across the tabs. The markup declared role="tablist"
+  // from the start but nothing implemented the keyboard half of that contract,
+  // so the tabs announced themselves as tabs and then behaved like links.
+  document.getElementById("tabs")?.addEventListener("keydown", (e) => {
+    const keys = ["ArrowRight", "ArrowLeft", "Home", "End"];
+    if (!keys.includes(e.key)) return;
+    const tabs = [...document.querySelectorAll(".tab")];
+    const i = tabs.findIndex((t) => t.classList.contains("active"));
+    if (i < 0) return;
+    e.preventDefault();
+    const next =
+      e.key === "Home" ? 0
+      : e.key === "End" ? tabs.length - 1
+      : e.key === "ArrowRight" ? (i + 1) % tabs.length
+      : (i - 1 + tabs.length) % tabs.length;
+    goToTab(tabs[next].dataset.tab, { focus: true });
+  });
+  document.querySelectorAll(".kpi-tile").forEach((b) =>
+    b.addEventListener("click", () => goToTab(b.dataset.goto))
+  );
+  window.addEventListener("resize", () => {
+    positionIndicator(document.querySelector(".tab.active"));
+  });
+  // fonts/layout can settle a frame after load; re-measure once more
+  window.addEventListener("load", () => positionIndicator(document.querySelector(".tab.active")));
+  positionIndicator(document.querySelector(".tab.active"));
 
   /* ------------------------------------------------------------------ */
   /* panels                                                              */
   /* ------------------------------------------------------------------ */
 
-  function bump(id, n) { $(id).textContent = n; }
+  function pulseKpi(id) {
+    const valueEl = $(id);
+    const tile = valueEl && valueEl.closest(".kpi-tile");
+    if (!tile) return;
+    tile.classList.add("pulse");
+    setTimeout(() => tile.classList.remove("pulse"), 500);
+  }
 
+  function bump(ids, n) {
+    (Array.isArray(ids) ? ids : [ids]).forEach((id) => {
+      const el = $(id);
+      if (!el) return;
+      el.textContent = n;
+    });
+    if (Array.isArray(ids)) ids.filter((id) => id.startsWith("kpi-")).forEach(pulseKpi);
+  }
+
+  /* Technical activity log - tucked into a closed <details>, off by default.
+     Still wired up so nothing breaks if you open it; just not part of the
+     creator-facing flow. */
   function addTrace(t) {
     const ul = $("trace");
+    if (!ul) return;
     const li = document.createElement("li");
     li.className = t.status || "running";
     li.innerHTML = `
@@ -52,6 +161,7 @@
 
   function addMcp(c) {
     const ul = $("mcp-list");
+    if (!ul) return;
     if (state.mcp === 0) ul.innerHTML = "";
     const li = document.createElement("li");
     li.innerHTML = `<span class="tool">${esc(c.tool)}</span><span class="args">${esc(c.args_summary || "")}</span>`;
@@ -67,6 +177,7 @@
     });
     drawOpps();
     drawKanban();
+    drawOverviewOpps();
   }
 
   function setStatuses(updates) {
@@ -77,46 +188,78 @@
     });
     drawOpps();
     drawKanban();
+    drawOverviewOpps();
   }
 
   function drawOpps() {
-    const body = $("opp-body");
+    const listEl = $("opp-list");
     const rows = [...state.opps.values()].sort((a, b) => (b.score || 0) - (a.score || 0));
     if (!rows.length) return;
-    body.innerHTML = rows
+    listEl.innerHTML = rows
       .map((o) => {
         const s = o.score;
         const cls = s == null ? "lo" : s >= 0.8 ? "hi" : s >= 0.6 ? "mid" : "lo";
-        return `<tr title="${esc(o.rationale || "")}">
-          <td><span class="type-chip ${esc(o.type)}">${esc(String(o.type).replace("_", " "))}</span></td>
-          <td>${esc(o.title)}</td>
-          <td class="num"><span class="score ${cls}">${s == null ? "—" : s.toFixed(2)}</span></td>
-          <td><span class="type-chip">${esc(o.status)}</span></td>
-        </tr>`;
+        // flash only rows whose score or status actually changed since the
+        // last render - a full-list flash on every redraw would cry wolf
+        const sig = `${s}|${o.status}`;
+        const changed = state.oppSignatures.has(o.opportunity_id) && state.oppSignatures.get(o.opportunity_id) !== sig;
+        state.oppSignatures.set(o.opportunity_id, sig);
+        return `<div class="idea-row${changed ? " flash" : ""}" title="${esc(o.rationale || "")}">
+          <span class="type-chip ${esc(o.type)}">${esc(String(o.type).replace("_", " "))}</span>
+          <b class="idea-row-title">${esc(o.title)}</b>
+          <span class="score ${cls}">${s == null ? "—" : s.toFixed(2)}</span>
+          <span class="stage-chip stage-${esc(statusGroup(o.status))}">${esc(statusLabel(o.status))}</span>
+        </div>`;
       })
       .join("");
-    bump("opp-count", rows.length);
+    bump(["opp-count", "kpi-opps"], rows.length);
   }
 
   function drawKanban() {
     const board = $("kanban");
-    const buckets = new Map(STATUSES.map(([k]) => [k, []]));
+    const buckets = new Map(GROUPS.map(([k]) => [k, []]));
     state.opps.forEach((o) => {
-      const key = STATUS_ALIAS[o.status] || o.status;
+      const key = statusGroup(o.status);
       if (buckets.has(key)) buckets.get(key).push(o);
     });
-    board.innerHTML = STATUSES.map(([key, label]) => {
+    board.innerHTML = GROUPS.map(([key, label]) => {
       const items = buckets.get(key);
       const cards = items
-        .map((o) => `<div class="kcard"><b>${esc(o.title)}</b>${esc(String(o.type).replace("_", " "))}</div>`)
+        .map((o) => `<div class="kcard"><b>${esc(o.title)}</b>${esc(statusLabel(o.status))}</div>`)
         .join("");
-      return `<div class="kcol ${esc(key)}"><h3><span>${esc(label)}</span><span>${items.length || ""}</span></h3>${cards}</div>`;
+      return `<div class="kcol ${esc(key)}">
+        <h3><span>${esc(label)}</span><span>${items.length || ""}</span></h3>
+        <div class="kcol-cards">${cards}</div>
+      </div>`;
     }).join("");
+  }
+
+  function drawOverviewOpps() {
+    const el = $("ov-opps");
+    if (!el) return;
+    const rows = [...state.opps.values()].sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 4);
+    if (!rows.length) {
+      el.innerHTML = '<p class="empty">Run a campaign to see this week’s ideas.</p>';
+      return;
+    }
+    el.innerHTML = rows
+      .map(
+        (o) => `
+        <div class="ov-item">
+          <span class="type-chip ${esc(o.type)}">${esc(String(o.type).replace("_", " "))}</span>
+          <div class="ov-item-body">
+            <b>${esc(o.title)}</b>
+            <p>${esc(o.rationale || o.why_now || "")}</p>
+          </div>
+        </div>`
+      )
+      .join("");
   }
 
   function drawCalendar(a) {
     $("cal-week").textContent = "of " + a.week_of;
-    $("calendar").innerHTML = (a.slots || [])
+    const slots = a.slots || [];
+    const html = slots
       .map((d) => {
         const items = (d.items || [])
           .map((i) => `<div class="slot ${esc(i.kind)}"><span class="t">${esc(i.time)}</span>${esc(i.title)}</div>`)
@@ -124,6 +267,11 @@
         return `<div class="day"><h3>${esc(d.day)}</h3>${items}</div>`;
       })
       .join("");
+    $("calendar").innerHTML = html;
+    const ovCal = $("ov-calendar");
+    if (ovCal) ovCal.innerHTML = html;
+    const total = slots.reduce((n, d) => n + (d.items || []).length, 0);
+    bump(["cal-count", "kpi-cal"], total);
   }
 
   function drawInbox(messages) {
@@ -137,7 +285,30 @@
         </li>`
       )
       .join("");
-    bump("inbox-count", state.inbox.size);
+    bump(["inbox-count", "kpi-inbox"], state.inbox.size);
+    drawOverviewInbox();
+  }
+
+  function drawOverviewInbox() {
+    const el = $("ov-inbox");
+    if (!el) return;
+    const items = [...state.inbox.values()].slice(-4).reverse();
+    if (!items.length) {
+      el.innerHTML = '<p class="empty">Nothing inbound yet.</p>';
+      return;
+    }
+    el.innerHTML = items
+      .map(
+        (m) => `
+        <div class="ov-item">
+          <span class="cls ${esc(m.classification)}">${esc(m.classification)}</span>
+          <div class="ov-item-body">
+            <b>${esc(m.from)}</b>
+            <p>${esc(m.preview)}</p>
+          </div>
+        </div>`
+      )
+      .join("");
   }
 
   function drawMemory(entries) {
@@ -152,19 +323,102 @@
         </li>`
       )
       .join("");
-    bump("memory-count", state.memory.size);
+    bump(["memory-count", "kpi-memory"], state.memory.size);
+    drawOverviewMemory();
+  }
+
+  function drawOverviewMemory() {
+    const el = $("ov-memory");
+    if (!el) return;
+    const entries = [...state.memory.values()].reverse().slice(0, 4);
+    if (!entries.length) {
+      el.innerHTML = '<li class="empty">This fills in after week 2.</li>';
+      return;
+    }
+    el.innerHTML = entries
+      .map(
+        (e) => `<li>
+          <div>${esc(e.insight)}</div>
+          ${e.changed_from ? `<div class="was">was: <s>${esc(e.changed_from)}</s></div>` : ""}
+        </li>`
+      )
+      .join("");
+  }
+
+  /* ---------------- content tab: list + detail ---------------- */
+
+  function renderArtifactRow(entry) {
+    const listEl = $("artifact-list");
+    if (state.artifactList.length === 1) listEl.innerHTML = "";
+    const row = document.createElement("div");
+    row.className = `content-row ${entry.data.cls || ""}`;
+    row.dataset.id = entry.id;
+    row.innerHTML = `
+      <span class="row-ico">${entry.data.ico}</span>
+      <div class="row-body">
+        <div class="row-title">${esc(entry.data.title)}</div>
+        <div class="row-meta">${esc(entry.data.meta)}</div>
+      </div>`;
+    row.addEventListener("click", () => selectArtifact(entry.id));
+    listEl.appendChild(row);
+    listEl.scrollTop = listEl.scrollHeight;
+  }
+
+  function selectArtifact(id) {
+    state.selectedArtifactId = id;
+    document.querySelectorAll(".content-row").forEach((r) => r.classList.toggle("selected", r.dataset.id === id));
+    const entry = state.artifactList.find((e) => e.id === id);
+    if (!entry) return;
+    const pane = $("artifact-detail");
+    pane.innerHTML = `
+      <div class="detail-enter">
+        <div class="detail-header"><span class="ico">${entry.data.ico}</span><h1>${esc(entry.data.title)}</h1></div>
+        <div class="detail-body">${entry.data.body}</div>
+      </div>`;
+    pane.scrollTop = 0;
   }
 
   function mountArtifact(name, args) {
-    const drawer = $("artifacts");
-    if (state.artifacts === 0) drawer.innerHTML = "";
     const render = TOOLS[name];
-    const node = render ? render(args) : fallback(name, args);
-    drawer.appendChild(node);
-    // Jump, do not animate: cards can land faster than a smooth scroll
-    // finishes, and each new one restarts the animation from the top.
-    drawer.scrollTop = drawer.scrollHeight;
-    bump("artifact-count", ++state.artifacts);
+    const data = render ? render(args) : fallback(name, args);
+    const id = `art-${state.artifactSeq++}`;
+    const entry = { id, name, data };
+    state.artifactList.push(entry);
+    renderArtifactRow(entry);
+    if (!state.selectedArtifactId) selectArtifact(id);
+    bump(["artifact-count", "kpi-artifacts"], state.artifactList.length);
+  }
+
+  function addContentPreview(a) {
+    state.contentPreview.unshift(a);
+    if (state.contentPreview.length > 4) state.contentPreview.length = 4;
+    drawOverviewContent();
+  }
+
+  function drawOverviewContent() {
+    const el = $("ov-content");
+    if (!el) return;
+    if (!state.contentPreview.length) {
+      el.innerHTML = '<p class="empty">Content shows up here once the app writes it.</p>';
+      return;
+    }
+    el.innerHTML = state.contentPreview
+      .map((a) => {
+        const platform = (a.platform || "tiktok").toLowerCase();
+        return `
+        <div class="media-preview ov-content-item">
+          <div class="media-frame ${esc(platform)}">
+            <span class="plat">${esc(platform)}</span>
+            <span class="play">▶</span>
+            <span class="dur">${esc(a.duration_s || 60)}s</span>
+          </div>
+          <div class="media-meta">
+            <b>${esc(a.hook || "")}</b>
+            <p>${esc(a.caption || "")}</p>
+          </div>
+        </div>`;
+      })
+      .join("");
   }
 
   /* ------------------------------------------------------------------ */
@@ -221,6 +475,7 @@
         catch (e) { console.warn("bad tool args for", t.name, e); }
         mountArtifact(t.name, args);
         if (t.name === "render_calendar_week") drawCalendar(args);
+        if (t.name === "render_content_package") addContentPreview(args);
         break;
       }
 
@@ -252,7 +507,7 @@
       tick();
     } else {
       $("run-meta").textContent =
-        `${state.traces} agent steps · ${state.artifacts} artifacts · ${((Date.now() - state.startedAt) / 1000).toFixed(1)}s`;
+        `${state.artifactList.length} pieces of content · ${((Date.now() - state.startedAt) / 1000).toFixed(1)}s`;
       state.nextWeek = state.nextWeek === 1 ? 2 : 1;
       $("btn-run").textContent = state.nextWeek === 2 ? "Run week 2 (replay)" : "Run campaign";
       if (state.nextWeek === 2) status("Week 1 done. Week 2 replays what came back.", "done");
@@ -261,8 +516,7 @@
 
   function tick() {
     if (!state.running) return;
-    $("run-meta").textContent =
-      `run ${state.runId || "…"} · ${((Date.now() - state.startedAt) / 1000).toFixed(1)}s · ${state.traces} steps`;
+    $("run-meta").textContent = `Working · ${((Date.now() - state.startedAt) / 1000).toFixed(1)}s`;
     setTimeout(tick, 200);
   }
 
@@ -271,21 +525,30 @@
     if (week === 1) {
       // Fresh week 1 clears the board; week 2 must build on week 1's state.
       state.opps.clear(); state.memory.clear(); state.inbox.clear();
-      state.traces = 0; state.artifacts = 0; state.mcp = 0;
-      $("trace").innerHTML = ""; $("artifacts").innerHTML = "";
+      state.oppSignatures.clear(); state.contentPreview = [];
+      state.artifactList = []; state.selectedArtifactId = null; state.artifactSeq = 0;
+      state.traces = 0; state.mcp = 0;
+      $("trace").innerHTML = "";
+      $("artifact-list").innerHTML = EMPTY_ARTIFACT_LIST;
+      $("artifact-detail").innerHTML = EMPTY_ARTIFACT_DETAIL;
       $("mcp-list").innerHTML = '<li class="empty">No tool calls yet.</li>';
-      ["trace-count", "artifact-count", "mcp-count", "opp-count", "inbox-count", "memory-count"].forEach((i) => bump(i, 0));
+      [
+        "trace-count", "artifact-count", "mcp-count", "opp-count", "inbox-count", "memory-count",
+        "kpi-artifacts", "kpi-opps", "kpi-inbox", "kpi-memory", "kpi-cal", "cal-count",
+      ].forEach((i) => bump(i, 0));
+      drawOverviewOpps(); drawOverviewInbox(); drawOverviewMemory(); drawOverviewContent();
     }
 
     const runId = `run_${Date.now().toString(36)}`;
     state.runId = runId;
     setRunning(true, runId);
-    status(week === 1 ? "Running campaign…" : "Replaying week 2…", "running");
+    status(week === 1 ? "Planning your week…" : "Checking what came back…", "running");
 
+    // The server overrides profile from the session cookie; sending it here
+    // only keeps the client's own correlation ids readable.
     const payload = {
       runId, week,
-      threadId: "maya",
-      profile: "maya",
+      threadId: state.profileId || runId,
       niche: $("f-niche").value,
       city: $("f-city").value,
       pause_before_send: $("f-pause").checked,
@@ -347,19 +610,28 @@
     try {
       const cfg = await (await fetch("/api/config")).json();
       const badge = $("mode-badge");
-      badge.textContent = cfg.mode === "live" ? "live · :8084" : "fixture mode";
+      badge.textContent = cfg.mode === "live" ? "Live" : "Demo mode";
       badge.className = "mode-badge " + cfg.mode;
       badge.title = cfg.mode === "live"
         ? `Streaming from ${cfg.cdr_agui_url}`
-        : "Replaying demo/fixtures - no LLM keys needed";
+        : "Replaying a saved demo run - no API keys needed";
       $("f-pause").checked = !!cfg.pause_before_send;
     } catch (e) {
       $("mode-badge").textContent = "offline";
     }
+    // The board is behind a login now: no session means no data to show, and
+    // no profile means onboarding was never finished.
     try {
-      const p = await (await fetch("/api/profile")).json();
-      $("f-niche").value = p.niche;
-      $("f-city").value = p.city;
+      const res = await fetch("/api/profile");
+      if (res.status === 401) { location.href = "/signin"; return; }
+      if (res.status === 409) { location.href = "/onboarding"; return; }
+      const p = await res.json();
+      state.profileId = p.id;
+      $("f-niche").value = p.niche || "";
+      $("f-city").value = p.city || "";
+      $("f-name").textContent = p.name || p.handle || "Your studio";
+      $("f-handle").textContent = p.handle ? "@" + p.handle : "";
+      $("f-avatar").textContent = (p.name || p.handle || "?").trim()[0].toUpperCase();
     } catch (e) { /* keep the defaults in the markup */ }
   }
 

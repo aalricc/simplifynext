@@ -57,6 +57,7 @@ class TrendHarvesterAgent(Agent):
                     f"{profile_brief(profile)}\n\nSearch results:\n{format_hits(hits)}",
                     DraftList,
                     model=FAST_MODEL,
+                    agent=self.name,
                 )
             except LLMError as exc:
                 return self._fallback(f"llm failed ({exc})")

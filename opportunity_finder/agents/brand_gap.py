@@ -69,6 +69,7 @@ class BrandGapAgent(Agent):
                     f"Local brands with NO short-form content:\n{places_block}\n\n"
                     f"Supporting web evidence:\n{format_hits(hits)}",
                     DraftList,
+                    agent=self.name,
                 )
             except LLMError as exc:
                 return self._fallback(f"llm failed ({exc})")

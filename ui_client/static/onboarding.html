@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Set up your studio · CreatorLoop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Work+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#ece3d6; --bg-2:#f8f3ea; --line:#dccbb2; --line-2:#c9b696;
+  --ink:#2b211a; --ink-2:#6d5f50; --ink-3:#8a7c6c;
+  --accent:#a44c34; --accent-2:#7d3722; --olive:#5e6b41; --danger:#8c2f1c;
+  --display:"Bricolage Grotesque","Trebuchet MS",Helvetica,sans-serif;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:15px/1.6 "Work Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased; padding:28px 20px 64px;
+  background-image:radial-gradient(760px 620px at 88% 8%, rgba(164,76,52,.13), transparent 64%);
+}
+.wrap{max-width:600px; margin:0 auto}
+.brand{display:inline-flex; align-items:center; gap:9px; text-decoration:none; color:var(--ink); margin-bottom:24px}
+.mark{width:26px; height:26px; border-radius:7px; background:linear-gradient(140deg,var(--accent),var(--accent-2))}
+.brand b{font-family:var(--display); font-weight:800; font-size:17px; letter-spacing:-.02em}
+
+/* progress: four real steps, so the count means something */
+.steps{display:flex; gap:6px; margin-bottom:26px}
+.steps i{flex:1; height:4px; border-radius:2px; background:var(--line-2); transition:background .2s}
+.steps i.on{background:var(--accent)}
+
+.card{background:var(--bg-2); border:1px solid var(--line); border-radius:14px; padding:30px 28px 26px; box-shadow:0 18px 44px -30px rgba(43,33,26,.45)}
+.eyebrow{font-size:12px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--accent); margin:0 0 8px}
+h1{font-family:var(--display); font-weight:800; font-size:25px; letter-spacing:-.025em; margin:0 0 6px; line-height:1.15; text-wrap:balance}
+.sub{color:var(--ink-2); margin:0 0 22px; font-size:14.5px}
+
+.field{margin-bottom:17px}
+.row{display:flex; gap:12px}
+.row .field{flex:1}
+label{display:block; font-weight:600; font-size:12.5px; margin:0 0 6px; color:var(--ink-2)}
+input,textarea,select{
+  width:100%; padding:11px 13px; border:1px solid var(--line-2); border-radius:8px;
+  background:#fff; color:var(--ink); font:15px/1.45 "Work Sans",sans-serif;
+}
+textarea{resize:vertical; min-height:74px}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:transparent}
+.hint{font-size:12.5px; color:var(--ink-3); margin-top:6px}
+
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chip{position:relative}
+.chip input{position:absolute; opacity:0; width:0; height:0}
+.chip span{
+  display:inline-block; padding:8px 14px; border:1px solid var(--line-2); border-radius:999px;
+  background:#fff; cursor:pointer; font-size:13.5px; font-weight:500; transition:all .15s;
+}
+.chip input:checked + span{background:var(--accent); border-color:var(--accent); color:#fff}
+.chip input:focus-visible + span{outline:2px solid var(--ink); outline-offset:2px}
+
+.nav{display:flex; gap:10px; margin-top:24px}
+button{border:0; border-radius:9px; cursor:pointer; font:600 15px/1 "Work Sans",sans-serif; padding:12px 20px; transition:background .15s}
+.next{flex:1; background:var(--accent); color:#fff}
+.next:hover:not(:disabled){background:var(--accent-2)}
+.next:disabled{opacity:.6; cursor:progress}
+.back{background:transparent; color:var(--ink-2); border:1px solid var(--line-2)}
+.back:hover{background:var(--bg)}
+button:focus-visible{outline:2px solid var(--ink); outline-offset:2px}
+
+.msg{margin-top:16px; padding:11px 13px; border-radius:8px; font-size:13.5px; border:1px solid; display:none}
+.msg.show{display:block}
+.msg.error{background:#f7e4de; border-color:#e0b6a8; color:var(--danger)}
+[hidden]{display:none !important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="/"><span class="mark" aria-hidden="true"></span><b>CreatorLoop</b></a>
+
+  <div class="steps" aria-hidden="true">
+    <i class="on"></i><i></i><i></i><i></i>
+  </div>
+
+  <form class="card" id="form" novalidate>
+
+    <!-- 1 -->
+    <section class="step" data-step="1">
+      <p class="eyebrow">Step 1 of 4</p>
+      <h1>Who you are</h1>
+      <p class="sub">The agents write in your voice and hunt in your city. This is what they start from.</p>
+      <div class="row">
+        <div class="field">
+          <label for="handle">Handle</label>
+          <input id="handle" required placeholder="mayacooks.sg">
+        </div>
+        <div class="field">
+          <label for="display_name">Display name</label>
+          <input id="display_name" placeholder="Maya Tan">
+        </div>
+      </div>
+      <div class="field">
+        <label for="city">City</label>
+        <input id="city" required placeholder="Singapore">
+      </div>
+      <div class="field">
+        <label for="niche">What you make</label>
+        <input id="niche" required placeholder="home-cook / hawker-style food">
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="step" data-step="2" hidden>
+      <p class="eyebrow">Step 2 of 4</p>
+      <h1>Where you post</h1>
+      <p class="sub">Follower counts calibrate what counts as a good week. Rough numbers are fine.</p>
+      <div class="field">
+        <label>Platforms</label>
+        <div class="chips">
+          <label class="chip"><input type="checkbox" name="platform" value="tiktok" checked><span>TikTok</span></label>
+          <label class="chip"><input type="checkbox" name="platform" value="instagram" checked><span>Instagram</span></label>
+          <label class="chip"><input type="checkbox" name="platform" value="youtube"><span>YouTube</span></label>
+          <label class="chip"><input type="checkbox" name="platform" value="xiaohongshu"><span>Xiaohongshu</span></label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="f_tiktok">TikTok followers</label>
+          <input id="f_tiktok" type="number" min="0" placeholder="8400">
+        </div>
+        <div class="field">
+          <label for="f_instagram">Instagram followers</label>
+          <input id="f_instagram" type="number" min="0" placeholder="3100">
+        </div>
+      </div>
+      <div class="field">
+        <label for="median_views">Typical views per post</label>
+        <input id="median_views" type="number" min="0" placeholder="5200">
+        <p class="hint">Your median, not your best one. The adapt loop measures against this.</p>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="step" data-step="3" hidden>
+      <p class="eyebrow">Step 3 of 4</p>
+      <h1>What you want</h1>
+      <p class="sub">The planner books real slots, so it needs to know when you can actually film.</p>
+      <div class="row">
+        <div class="field">
+          <label for="cadence_goal">Posts per week</label>
+          <input id="cadence_goal" type="number" min="1" max="21" value="3">
+        </div>
+        <div class="field">
+          <label for="budget">Weekly budget (optional)</label>
+          <input id="budget" type="number" min="0" placeholder="40">
+        </div>
+      </div>
+      <div class="field">
+        <label>Filming days</label>
+        <div class="chips">
+          <label class="chip"><input type="checkbox" name="day" value="mon"><span>Mon</span></label>
+          <label class="chip"><input type="checkbox" name="day" value="tue"><span>Tue</span></label>
+          <label class="chip"><input type="checkbox" name="day" value="wed"><span>Wed</span></label>
+          <label class="chip"><input type="checkbox" name="day" value="thu"><span>Thu</span></label>
+          <label class="chip"><input type="checkbox" name="day" value="fri"><span>Fri</span></label>
+          <label class="chip"><input type="checkbox" name="day" value="sat"><span>Sat</span></label>
+          <label class="chip"><input type="checkbox" name="day" value="sun"><span>Sun</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="goals">Goals — one per line</label>
+        <textarea id="goals" placeholder="3 posts per week on a repeatable schedule&#10;first paid local brand deal under SGD 800"></textarea>
+      </div>
+      <div class="field">
+        <label for="pain">What makes this hard right now?</label>
+        <textarea id="pain" placeholder="Every week starts from a blank page, so two of the three posts never happen."></textarea>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="step" data-step="4" hidden>
+      <p class="eyebrow">Step 4 of 4</p>
+      <h1>How you sound</h1>
+      <p class="sub">Hooks, captions and outreach emails all get written from this. Be specific.</p>
+      <div class="field">
+        <label for="tone">Tone</label>
+        <input id="tone" placeholder="warm, fast, a little self-deprecating">
+      </div>
+      <div class="field">
+        <label for="language">Language</label>
+        <input id="language" placeholder="English with Singlish seasoning — never forced">
+      </div>
+      <div class="field">
+        <label for="signature">Your signature — what makes a post yours?</label>
+        <input id="signature" placeholder="cooks in a real HDB kitchen, no studio lighting, hands-only shots">
+      </div>
+      <div class="field">
+        <label for="avoid">Never write like this — one per line</label>
+        <textarea id="avoid" placeholder="corporate food-blogger voice&#10;unverifiable superlatives&#10;fake urgency"></textarea>
+      </div>
+      <div class="field">
+        <label for="no_go">Topics and brands to refuse — one per line</label>
+        <textarea id="no_go" placeholder="alcohol brands&#10;crypto"></textarea>
+      </div>
+      <div class="field">
+        <label for="best">Topics that work for you — comma separated</label>
+        <input id="best" placeholder="laksa, chilli crab, noodle pulls">
+      </div>
+      <div class="field">
+        <label for="worst">Topics that flop — comma separated</label>
+        <input id="worst" placeholder="3-ingredient desserts, baking">
+      </div>
+    </section>
+
+    <div class="nav">
+      <button type="button" class="back" id="back" hidden>Back</button>
+      <button type="submit" class="next" id="next">Continue</button>
+    </div>
+    <p class="msg" id="msg" role="status" aria-live="polite"></p>
+  </form>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var step = 1, LAST = 4;
+  var steps = Array.prototype.slice.call(document.querySelectorAll(".step"));
+  var bars = Array.prototype.slice.call(document.querySelectorAll(".steps i"));
+
+  function lines(id){
+    return $(id).value.split("\n").map(function(s){ return s.trim(); }).filter(Boolean);
+  }
+  function commas(id){
+    return $(id).value.split(",").map(function(s){ return s.trim(); }).filter(Boolean);
+  }
+  function checked(name){
+    return Array.prototype.slice
+      .call(document.querySelectorAll('input[name="' + name + '"]:checked'))
+      .map(function(el){ return el.value; });
+  }
+  function show(text){ var m = $("msg"); m.textContent = text; m.className = "msg show error"; }
+  function hide(){ $("msg").className = "msg"; }
+
+  function render(){
+    steps.forEach(function(s){ s.hidden = Number(s.dataset.step) !== step; });
+    bars.forEach(function(b, i){ b.classList.toggle("on", i < step); });
+    $("back").hidden = step === 1;
+    $("next").textContent = step === LAST ? "Create my studio" : "Continue";
+    hide();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function valid(){
+    if (step === 1) {
+      if (!$("handle").value.trim()) { show("Pick a handle."); return false; }
+      if (!$("city").value.trim()) { show("Which city are you in?"); return false; }
+      if (!$("niche").value.trim()) { show("Say what kind of content you make."); return false; }
+    }
+    return true;
+  }
+
+  $("back").onclick = function(){ if (step > 1) { step--; render(); } };
+
+  $("form").addEventListener("submit", async function(e){
+    e.preventDefault();
+    if (!valid()) return;
+    if (step < LAST) { step++; render(); return; }
+
+    var followers = {};
+    if ($("f_tiktok").value) followers.tiktok = Number($("f_tiktok").value);
+    if ($("f_instagram").value) followers.instagram = Number($("f_instagram").value);
+
+    var payload = {
+      handle: $("handle").value.trim().replace(/^@/, ""),
+      display_name: $("display_name").value.trim() || $("handle").value.trim(),
+      city: $("city").value.trim(),
+      niche: $("niche").value.trim(),
+      pain: $("pain").value.trim(),
+      platforms: checked("platform"),
+      followers: followers,
+      median_views: $("median_views").value ? Number($("median_views").value) : null,
+      cadence_goal: Number($("cadence_goal").value || 3),
+      filming_days: checked("day"),
+      budget_sgd_per_week: $("budget").value ? Number($("budget").value) : null,
+      goals: lines("goals"),
+      no_go: lines("no_go"),
+      best_performing: commas("best"),
+      worst_performing: commas("worst"),
+      voice: {
+        tone: $("tone").value.trim(),
+        language: $("language").value.trim(),
+        signature: $("signature").value.trim(),
+        avoid: lines("avoid")
+      }
+    };
+
+    $("next").disabled = true;
+    try {
+      var res = await fetch("/api/profiles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      var data = await res.json().catch(function(){ return {}; });
+      if (res.status === 401) { location.href = "/signin"; return; }
+      if (!res.ok) {
+        show(data.error || data.detail || "Could not save that. Try again.");
+        $("next").disabled = false;
+        return;
+      }
+      location.href = data.next || "/board";
+    } catch (err) {
+      show("Cannot reach the server. Is it running on :8000?");
+      $("next").disabled = false;
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

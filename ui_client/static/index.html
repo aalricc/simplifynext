@@ -4,18 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CreatorLoop - Studio Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Work+Sans:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
 
 <header class="campaign-bar">
-  <div class="brand">
-    <span class="logo">◐</span>
+  <!-- The brand doubles as the way back to the landing page. -->
+  <a class="brand" href="/" aria-label="CreatorLoop home">
+    <span class="logo" aria-hidden="true">◐</span>
     <div>
       <h1>CreatorLoop</h1>
       <p class="tag">plan · act · adapt</p>
     </div>
-  </div>
+  </a>
 
   <div class="campaign-fields">
     <label>Niche
@@ -24,18 +28,22 @@
     <label>City
       <input id="f-city" value="Singapore">
     </label>
-    <label>Profile
+    <!-- Not a <label>: there is no form control to label, and wrapping a
+         static chip in one gave the field group a phantom third input. -->
+    <div class="field-static">
+      <span class="field-caption">Profile</span>
+      <!-- Filled from /api/profile for the signed-in creator. -->
       <div class="profile-chip" id="f-profile">
-        <span class="avatar">M</span>
-        <span><b>Maya Tan</b><i>@mayacooks.sg</i></span>
+        <span class="avatar" id="f-avatar" aria-hidden="true">·</span>
+        <span><b id="f-name">Loading…</b><i id="f-handle"></i></span>
       </div>
-    </label>
+    </div>
   </div>
 
   <div class="campaign-actions">
     <div class="toggles">
-      <label class="switch" title="Optional HITL. Default off - the agents send on their own.">
-        <input type="checkbox" id="f-pause"> <span>Pause before send</span>
+      <label class="switch" title="Review each message before it sends, instead of the app sending on its own.">
+        <input type="checkbox" id="f-pause"> <span>Review before sending</span>
       </label>
       <span class="mode-badge" id="mode-badge">…</span>
     </div>
@@ -51,70 +59,183 @@
   <span id="run-meta"></span>
 </div>
 
+<!-- ---------------- glanceable summary ---------------- -->
+<!-- These are jump-to-section buttons, not tabs. They previously declared
+     role="tablist"/role="tab" with every tile permanently aria-selected="false"
+     and no aria-controls - an invalid tablist, and a second one on a page that
+     already has a real one below. Plain buttons in a labelled group is what
+     they actually are. The glyphs are decorative; the number and label carry
+     the meaning, so each button gets an explicit accessible name. -->
+<div class="kpi-strip" id="kpi-strip" role="group" aria-label="This week at a glance">
+  <button class="kpi-tile" data-goto="ideas" aria-label="Ideas found. Go to Ideas.">
+    <span class="kpi-icon" aria-hidden="true">◆</span>
+    <span class="kpi-num"><span class="kpi-value" id="kpi-opps">0</span></span>
+    <span class="kpi-label">Ideas found</span>
+  </button>
+  <button class="kpi-tile" data-goto="calendar" aria-label="Scheduled this week. Go to Calendar.">
+    <span class="kpi-icon" aria-hidden="true">▤</span>
+    <span class="kpi-num"><span class="kpi-value" id="kpi-cal">0</span></span>
+    <span class="kpi-label">Scheduled this week</span>
+  </button>
+  <button class="kpi-tile" data-goto="replies" aria-label="Replies. Go to Replies.">
+    <span class="kpi-icon" aria-hidden="true">◔</span>
+    <span class="kpi-num"><span class="kpi-value" id="kpi-inbox">0</span></span>
+    <span class="kpi-label">Replies</span>
+  </button>
+  <button class="kpi-tile" data-goto="content" aria-label="Content ready. Go to Content.">
+    <span class="kpi-icon" aria-hidden="true">▣</span>
+    <span class="kpi-num"><span class="kpi-value" id="kpi-artifacts">0</span></span>
+    <span class="kpi-label">Content ready</span>
+  </button>
+</div>
+
+<!-- ---------------- tabs ---------------- -->
+<nav class="tabs" id="tabs" role="tablist" aria-label="Board sections">
+  <button class="tab active" role="tab" aria-selected="true" aria-controls="tab-overview" data-tab="overview" id="tabbtn-overview">
+    Overview
+  </button>
+  <button class="tab" role="tab" aria-selected="false" aria-controls="tab-ideas" data-tab="ideas" id="tabbtn-ideas">
+    Ideas
+  </button>
+  <button class="tab" role="tab" aria-selected="false" aria-controls="tab-calendar" data-tab="calendar" id="tabbtn-calendar">
+    Calendar
+  </button>
+  <button class="tab" role="tab" aria-selected="false" aria-controls="tab-replies" data-tab="replies" id="tabbtn-replies">
+    Replies
+  </button>
+  <button class="tab" role="tab" aria-selected="false" aria-controls="tab-content" data-tab="content" id="tabbtn-content">
+    Content
+  </button>
+  <span class="tab-indicator" id="tab-indicator" aria-hidden="true"></span>
+</nav>
+
 <main class="board">
 
-  <!-- ---------------- left: live agent trace ---------------- -->
-  <section class="col col-trace">
-    <div class="panel grow">
-      <h2>Live agent trace <span class="count" id="trace-count">0</span></h2>
-      <p class="hint">OTEL span names. Every line is a real named agent, not "AI is thinking".</p>
-      <ol class="trace" id="trace"></ol>
-    </div>
+  <!-- ---------------- overview: the weekly glance ---------------- -->
+  <section class="tabpanel active" id="tab-overview" data-tab="overview" role="tabpanel" aria-labelledby="tabbtn-overview" tabindex="0">
+    <div class="overview-grid">
 
-    <div class="panel">
-      <h2>MCP tool calls <span class="count" id="mcp-count">0</span></h2>
-      <ul class="mcp" id="mcp-list"><li class="empty">No tool calls yet.</li></ul>
+      <div class="panel">
+        <h2>Top ideas this week</h2>
+        <p class="hint">Trending topics, brand gaps and collab ideas, best first.</p>
+        <div class="ov-list" id="ov-opps">
+          <p class="empty">Run a campaign to see this week's ideas.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Replies to check</h2>
+        <p class="hint">Inbound messages, newest first.</p>
+        <div class="ov-list" id="ov-inbox">
+          <p class="empty">Nothing inbound yet.</p>
+        </div>
+      </div>
+
+      <div class="panel span-2">
+        <h2>This week's content</h2>
+        <p class="hint">Drafts and scripts ready for you to review.</p>
+        <div class="ov-content" id="ov-content">
+          <p class="empty">Content shows up here once the app writes it.</p>
+        </div>
+      </div>
+
+      <div class="panel span-2">
+        <h2>Schedule</h2>
+        <p class="hint">Posting, filming and outreach slots for the week.</p>
+        <div class="calendar" id="ov-calendar"></div>
+      </div>
+
+      <div class="panel span-2">
+        <h2>What's working</h2>
+        <p class="hint">What the app noticed and how it's adjusting.</p>
+        <ul class="memory" id="ov-memory"><li class="empty">This fills in after week 2.</li></ul>
+      </div>
+
     </div>
   </section>
 
-  <!-- ---------------- centre: the board ---------------- -->
-  <section class="col col-main">
-
+  <!-- ---------------- ideas ---------------- -->
+  <section class="tabpanel" id="tab-ideas" data-tab="ideas" role="tabpanel" aria-labelledby="tabbtn-ideas" tabindex="0">
     <div class="panel">
-      <h2>Opportunities <span class="count" id="opp-count">0</span></h2>
-      <table class="opps">
-        <thead><tr><th>Type</th><th>Title</th><th class="num">Score</th><th>Status</th></tr></thead>
-        <tbody id="opp-body"><tr class="empty"><td colspan="4">Run a campaign to fill the board.</td></tr></tbody>
-      </table>
-    </div>
-
-    <div class="panel">
-      <h2>Pipeline</h2>
-      <p class="hint">Statuses owned by Pipeline Manager (8082).</p>
+      <h2>Where each idea stands</h2>
+      <p class="hint">Grouped by stage. Scroll a column if it runs long.</p>
       <div class="kanban" id="kanban"></div>
     </div>
 
     <div class="panel">
-      <h2>Week <span class="count subtle" id="cal-week">—</span></h2>
+      <h2>All ideas <span class="count" id="opp-count">0</span></h2>
+      <p class="hint">Every idea found, best fit first.</p>
+      <div class="idea-list" id="opp-list">
+        <p class="empty">Run a campaign to fill the board.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------------- calendar ---------------- -->
+  <section class="tabpanel" id="tab-calendar" data-tab="calendar" role="tabpanel" aria-labelledby="tabbtn-calendar" tabindex="0">
+    <div class="panel">
+      <h2>Week <span class="count subtle" id="cal-week">—</span> <span class="count" id="cal-count">0</span></h2>
+      <p class="hint">Posting, filming and outreach slots for the week.</p>
       <div class="calendar" id="calendar"></div>
     </div>
+  </section>
 
+  <!-- ---------------- replies ---------------- -->
+  <section class="tabpanel" id="tab-replies" data-tab="replies" role="tabpanel" aria-labelledby="tabbtn-replies" tabindex="0">
     <div class="two-up">
       <div class="panel">
-        <h2>Engagement inbox <span class="count" id="inbox-count">0</span></h2>
+        <h2>Inbox <span class="count" id="inbox-count">0</span></h2>
+        <p class="hint">Inbound replies, classified as they arrive.</p>
         <ul class="inbox" id="inbox"><li class="empty">Nothing inbound yet. Run week 2.</li></ul>
       </div>
       <div class="panel">
         <h2>What we learned <span class="count" id="memory-count">0</span></h2>
+        <p class="hint">Written at the end of a run.</p>
         <ul class="memory" id="memory"><li class="empty">Memory is written at the end of a run.</li></ul>
       </div>
     </div>
-
   </section>
 
-  <!-- ---------------- right: generative artifact drawer ---------------- -->
-  <section class="col col-artifacts">
-    <div class="panel grow">
-      <h2>Artifacts <span class="count" id="artifact-count">0</span></h2>
-      <p class="hint">Agent tool calls rendered as components, not chat text.</p>
-      <div class="artifacts" id="artifacts">
+  <!-- ---------------- content: list + detail ---------------- -->
+  <section class="tabpanel" id="tab-content" data-tab="content" role="tabpanel" aria-labelledby="tabbtn-content" tabindex="0">
+    <div class="content-layout">
+      <div class="content-list-pane">
+        <div class="content-list-header">
+          <h2>Drafts &amp; sent <span class="count" id="artifact-count">0</span></h2>
+          <p class="hint">Click one to read it in full.</p>
+        </div>
+        <div class="content-list" id="artifact-list">
+          <div class="empty-art">
+            <span>◫</span>
+            <p>Scripts, captions and messages land here as they're written.</p>
+          </div>
+        </div>
+      </div>
+      <div class="content-detail-pane" id="artifact-detail">
         <div class="empty-art">
           <span>◫</span>
-          <p>When an agent calls a render tool, the card lands here.</p>
+          <p>Select an item on the left to see the full draft.</p>
         </div>
       </div>
     </div>
   </section>
+
+  <!-- ---------------- technical activity: tucked away, off by default ---------------- -->
+  <details class="tech-drawer" id="tech-drawer">
+    <summary>Show technical activity log</summary>
+    <div class="tabpanel-grid trace-grid">
+      <div class="panel grow">
+        <h2>Live agent trace <span class="count" id="trace-count">0</span></h2>
+        <p class="hint">OTEL span names. Every line is a real named agent, not "AI is thinking".</p>
+        <ol class="trace" id="trace"></ol>
+      </div>
+      <div class="panel grow">
+        <h2>MCP tool calls <span class="count" id="mcp-count">0</span></h2>
+        <p class="hint">Every tool an agent reached for, in order.</p>
+        <ul class="mcp" id="mcp-list"><li class="empty">No tool calls yet.</li></ul>
+      </div>
+    </div>
+  </details>
 
 </main>
 

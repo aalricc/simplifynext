@@ -1,0 +1,70 @@
+{
+  "_note": "Henry's seeded opportunities. source_agent decides which harvest agent claims each row in fixture mode.",
+  "opportunities": [
+    {
+      "id": "opp-henry-vintage-repack",
+      "type": "trend",
+      "title": "Opening a 1999 Base Set repack — is it worth SGD 80?",
+      "why_now": "Repack listings on Carousell have doubled this month and nobody local has filmed an honest one.",
+      "city": "Singapore",
+      "niche": "Pokémon card openings, pulls and grading",
+      "score": 92,
+      "evidence_urls": ["https://example.local/trend/repack-honesty"],
+      "raw_notes": "High save intent. Audience wants the verdict, not the hype.",
+      "source_agent": "TrendHarvesterAgent",
+      "status": "new"
+    },
+    {
+      "id": "opp-henry-grading-reveal",
+      "type": "trend",
+      "title": "My 12 grading submissions come back — live reveal",
+      "why_now": "Grading turnaround times just dropped, so submission content is peaking.",
+      "city": "Singapore",
+      "niche": "Pokémon card openings, pulls and grading",
+      "score": 86,
+      "evidence_urls": ["https://example.local/trend/grading-turnaround"],
+      "raw_notes": "Reveal format holds retention past 60%.",
+      "source_agent": "TrendHarvesterAgent",
+      "status": "new"
+    },
+    {
+      "id": "opp-henry-brand-gap-orchard",
+      "type": "gap",
+      "title": "Orchard Card Bar has a queue and no short-form",
+      "why_now": "Busy weekend shop floor, active Instagram, zero video. Henry can own their break content.",
+      "city": "Singapore",
+      "niche": "Pokémon card openings, pulls and grading",
+      "score": 90,
+      "evidence_urls": ["https://example.local/brand/orchard-card-bar"],
+      "raw_notes": "Brand-gap: real product, no creator content. Highest-fit sponsor target.",
+      "source_agent": "BrandGapAgent",
+      "status": "new"
+    },
+    {
+      "id": "opp-henry-collab-gradehouse",
+      "type": "collab",
+      "title": "GradeHouse walkthrough — what actually costs you a 10",
+      "why_now": "New grading service needs trust; Henry needs a reason to film a submission.",
+      "city": "Singapore",
+      "niche": "Pokémon card openings, pulls and grading",
+      "score": 78,
+      "evidence_urls": ["https://example.local/brand/gradehouse"],
+      "raw_notes": "Collab. Educational angle Henry's audience already asks for in comments.",
+      "source_agent": "CollabScoutAgent",
+      "status": "new"
+    },
+    {
+      "id": "opp-henry-deck-tech",
+      "type": "gap",
+      "title": "Beginner deck-building tutorial series",
+      "why_now": "Search volume exists but Henry's own deck content underperforms badly.",
+      "city": "Singapore",
+      "niche": "Pokémon card openings, pulls and grading",
+      "score": 41,
+      "evidence_urls": [],
+      "raw_notes": "Weak fit. Kept so the scorer has something to rank last.",
+      "source_agent": "BrandGapAgent",
+      "status": "new"
+    }
+  ]
+}

@@ -15,17 +15,17 @@ from typing import Any
 import httpx
 
 from mcp.tools import tool
-from shared.http_clients import PIPELINE_MANAGER_URL
-from shared.rag import retrieve
+from shared.http_clients import PIPELINE_MANAGER_URL, client
+from shared.rag import rank
 
-DEMO = Path(__file__).resolve().parents[2] / "demo" / "maya"
-INBOX_FIXTURE = DEMO / "inbox.json"
 OUTBOX_MAIL = Path(__file__).resolve().parents[2] / "demo" / "outbox" / "mail"
 
 
 async def _pipeline_call(method: str, path: str, **kwargs: Any) -> dict[str, Any]:
-    async with httpx.AsyncClient(timeout=15.0) as client:
-        r = await client.request(method, f"{PIPELINE_MANAGER_URL}{path}", **kwargs)
+    # shared.http_clients.client() attaches this request's signed tenant
+    # headers, so Pipeline Manager scopes the query to the right creator.
+    async with client(timeout=15.0) as c:
+        r = await c.request(method, f"{PIPELINE_MANAGER_URL}{path}", **kwargs)
         r.raise_for_status()
         return r.json()
 
@@ -37,8 +37,9 @@ async def _pipeline_call(method: str, path: str, **kwargs: Any) -> dict[str, Any
     description="Retrieve creator memory and past-post context (multi-agent RAG).",
 )
 async def retrieve_creator_memory(query: str, k: int = 4) -> list[dict[str, Any]]:
-    """Keyword RAG over demo/maya/rag_corpus.json. Returns a document list for CDR."""
-    return retrieve(query, k)
+    """Keyword RAG over this creator's `rag_documents`. Returns docs for CDR."""
+    data = await _pipeline_call("GET", "/pipeline/rag")
+    return rank(data.get("documents") or [], query, k)
 
 
 @tool(
@@ -47,15 +48,11 @@ async def retrieve_creator_memory(query: str, k: int = 4) -> list[dict[str, Any]
     description="Read inbound replies for the creator (week-2 adapt loop).",
 )
 async def read_engagement_inbox(unread_only: bool = False) -> dict[str, Any]:
-    """Inbound replies. Fixture-backed until Engagement Listener is wired live."""
-    if not INBOX_FIXTURE.exists():
-        return {"items": [], "mode": "fixture"}
-
-    data = json.loads(INBOX_FIXTURE.read_text())
-    items = data.get("items", data.get("messages", data)) if isinstance(data, dict) else data
-    if unread_only and isinstance(items, list):
-        items = [m for m in items if not m.get("read", False)]
-    return {"items": items, "mode": "fixture"}
+    """Inbound replies for the creator in context, from `engagement_items`."""
+    data = await _pipeline_call(
+        "GET", "/pipeline/engagement", params={"unread_only": str(unread_only).lower()}
+    )
+    return {"items": data.get("items") or [], "mode": "live"}
 
 
 @tool(

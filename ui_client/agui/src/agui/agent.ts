@@ -10,10 +10,17 @@ import { HttpAgent } from "@ag-ui/client";
  */
 export const AGUI_URL = import.meta.env.VITE_AGUI_URL ?? "/ag-ui";
 
+// threadId is set from the signed-in profile once /api/profile resolves; the
+// server derives tenancy from the session cookie either way, so this is only
+// a client-side correlation id.
 export const cdrAgent = new HttpAgent({
   url: AGUI_URL,
   agentId: "cdr",
-  threadId: "maya",
+  threadId: "pending",
 });
+
+export function setThread(profileId: string): void {
+  cdrAgent.threadId = profileId;
+}
 
 export const AGENTS = { cdr: cdrAgent };

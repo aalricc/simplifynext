@@ -1,16 +1,31 @@
 /* React-only additions on top of the shared board stylesheet.
-   The static fallback uses <li> for trace rows; the React tree uses divs. */
+   The static fallback uses <li> for trace rows; the React tree uses divs,
+   so the trace-row rules below mirror `.trace li` in styles.css. */
 .trace-row{
   flex:0 0 auto;
-  padding:7px 8px; border-radius:7px; border-left:2px solid var(--line);
-  background:var(--panel-2); animation:slidein .28s ease;
+  padding:9px 0; border-bottom:1px solid var(--line-soft);
+  background:transparent; animation:slidein .24s var(--ease-out);
 }
-.trace-row.running{border-left-color:var(--info)}
-.trace-row.done{border-left-color:var(--ok)}
-.trace-row.fail{border-left-color:var(--fail); background:rgba(255,107,107,.07)}
+.trace-row:last-child{border-bottom:0}
+/* Status reads from the marker, not from a tinted row - tinting every row
+   makes the failure that matters impossible to find. */
+.trace-row .row1::before{
+  content:""; display:inline-block; width:6px; height:6px; border-radius:50%;
+  background:var(--ink-3); margin-right:9px; vertical-align:2px;
+}
+.trace-row.running .row1::before{background:var(--info)}
+.trace-row.done .row1::before{background:var(--accent)}
+.trace-row.fail .row1::before{background:var(--fail)}
+.trace-row.fail{
+  background:rgba(192,86,63,.05); border-radius:8px; padding:9px 10px; margin:2px 0;
+}
 
 /* The static page puts .campaign-bar/.board directly in <body>, which is the
    flex column. React nests them under #root, so #root has to become that
    column or the panels collapse to content height. */
 #root{display:flex; flex-direction:column; height:100%; min-height:0}
 body{overflow:hidden}
+
+/* CopilotKit's sidebar ships its own dark-leaning defaults; keep it on the
+   Daylight surface so the chat does not fight the board. */
+.copilotKitSidebar{--copilot-kit-background-color:var(--surface)}

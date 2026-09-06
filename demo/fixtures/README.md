@@ -52,6 +52,24 @@ protocol events above.
 `status` is `running | done | fail` and drives the row colour — `fail` is what
 makes the critique loop visible.
 
+### Where the live agent meets this contract
+
+P2 emits these same events. The translation from CDR's own schemas lives in
+[`cdr/agui_map.py`](../../cdr/agui_map.py) — one module, so P2 keeps its
+schemas and P4 keeps its components. Two vocabularies deliberately differ and
+are mapped there rather than changed at either end:
+
+| Board / fixtures | `shared.schemas` | Why |
+|---|---|---|
+| `qualified` | `OpportunityStatus.researched` | Kanban columns predate the enum; the fixtures speak the board's vocabulary |
+| `outreach_sent` | `outreached` | |
+| `replied` | `engaged` | |
+| `negotiating` | `meeting` | |
+| score `0.0-1.0` | Finder score `0-100` | The board formats two decimals |
+
+Changing either vocabulary means changing `PIPELINE_STATUS` in `agui_map.py`,
+not the fixtures and not the components.
+
 ## TOOL_CALL names → components
 
 Each name maps to one component in

@@ -63,7 +63,11 @@ class OpportunityClusterAgent(Agent):
 
             try:
                 result = await chat_model(
-                    SYSTEM, f"Opportunities:\n{listing}", ClusterResult, model=FAST_MODEL
+                    SYSTEM,
+                    f"Opportunities:\n{listing}",
+                    ClusterResult,
+                    model=FAST_MODEL,
+                    agent=self.name,
                 )
             except LLMError as exc:
                 return {

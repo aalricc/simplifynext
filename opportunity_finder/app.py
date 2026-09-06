@@ -8,31 +8,32 @@ Frozen contract -- CDR calls /tools/find_opportunities as an agent-as-tool:
     GET  /health
 
 Behind those routes runs OpportunityFinderRoot -> OpportunityFinderPipeline
-(LangGraph). Any failure falls back to demo/maya seed data so the rest of the
-team is never blocked.
+(LangGraph). A failure returns an empty list and a note; it does not substitute
+seed data, because seed data belongs to one persona and would be served to
+whichever creator happened to ask.
 """
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 from observability.otel import setup_tracing
 from opportunity_finder.agents.root import OpportunityFinderRoot
+from opportunity_finder.agents.state import ProfileMissing
 from shared.cors import add_cors
 from shared.schemas import SearchRequest
+from shared.tenant import current_profile
 
-SEED = Path(__file__).resolve().parents[1] / "demo" / "maya" / "opportunities_seed.json"
-
-app = FastAPI(title="Opportunity Finder", version="0.2.0")
+app = FastAPI(title="Opportunity Finder", version="0.3.0")
 add_cors(app)
 setup_tracing("opportunity_finder")
 
 ROOT = OpportunityFinderRoot()
-_LAST: dict[str, Any] = {}
+# Last result per profile. A single module-level `_LAST` leaked one creator's
+# search results to whoever asked next.
+_LAST: dict[str, dict[str, Any]] = {}
 
 
 @app.get("/health")
@@ -42,32 +43,34 @@ def health() -> dict:
 
 @app.get("/opportunities/last")
 def last() -> dict:
-    if _LAST:
-        return _LAST
-    if SEED.exists():
-        return json.loads(SEED.read_text())
-    return {"opportunities": []}
+    return _LAST.get(current_profile(), {"opportunities": []})
 
 
 @app.post("/opportunities/search")
 @app.post("/tools/find_opportunities")
 async def search(req: SearchRequest) -> dict:
-    global _LAST
+    profile = req.profile.model_dump() if req.profile else None
+    if profile is None and req.profile_id:
+        profile = {"id": req.profile_id, "niche": req.niche, "city": req.city}
 
-    result = await ROOT.run(
-        {
-            "profile_id": req.profile_id,
-            "profile": req.profile.model_dump() if req.profile else None,
-            "niche": req.niche,
-            "city": req.city,
-            "limit": req.limit,
-        }
-    )
+    try:
+        result = await ROOT.run(
+            {
+                "profile_id": req.profile_id,
+                "profile": profile,
+                "niche": req.niche,
+                "city": req.city,
+                "limit": req.limit,
+            }
+        )
+    except ProfileMissing as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    _LAST = {
+    payload = {
         "opportunities": result["opportunities"],
         "run_id": result["run_id"],
         "mode": result.get("mode", "live"),
         "notes": result.get("notes", []),
     }
-    return _LAST
+    _LAST[current_profile()] = payload
+    return payload

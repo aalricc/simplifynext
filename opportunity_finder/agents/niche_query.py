@@ -38,6 +38,7 @@ class NicheQueryAgent(Agent):
                         f"Generate search queries for niche '{niche}' in {city}.",
                         QueryList,
                         model=FAST_MODEL,
+                        agent=self.name,
                     )
                     queries = [q.strip() for q in result.queries if q.strip()][:10]
                     if queries:

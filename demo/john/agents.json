@@ -1,0 +1,165 @@
+{
+  "_note": "John's canned agent output. The critique beat: ProposalGenerationAgent writes an invented resale valuation, FactCheckerAgent fails it, DraftWriterAgent rewrites with the actual sold price and passes.",
+
+  "NicheQueryAgent": {
+    "queries": [
+      "thrift flip singapore before after",
+      "flaw first haul condition honest",
+      "haji lane vintage store instagram",
+      "resale price check carousell depop sg",
+      "how to clean thrifted stains",
+      "vintage store creator partnership singapore",
+      "rail restock format retention",
+      "wardrobe organisation views drop"
+    ]
+  },
+  "TrendHarvesterAgent": { "_seed": "TrendHarvesterAgent" },
+  "BrandGapAgent": { "_seed": "BrandGapAgent" },
+  "CollabScoutAgent": { "_seed": "CollabScoutAgent" },
+  "OpportunityClusterAgent": {
+    "clusters": [
+      { "theme": "flaw-first flips", "ids": ["opp-john-flaw-first-flip", "opp-john-brand-gap-loop"] },
+      { "theme": "care and cleaning", "ids": ["opp-john-collab-refresh"] },
+      { "theme": "weekly restock format", "ids": ["opp-john-rail-restock"] },
+      { "theme": "organisation (weak)", "ids": ["opp-john-wardrobe-organise"] }
+    ]
+  },
+  "OpportunityScorerAgent": { "_seed": "*" },
+  "OpportunityFinderRoot": { "ok": true },
+
+  "OpportunityClerkAgent": { "ok": true, "action": "upsert" },
+  "QualificationAgent": {
+    "_rules": [
+      { "if_any": ["loop vintage", "opp-john-brand-gap-loop", "91"], "then": { "label": "hot", "reason": "Brand-gap with strong curation and no video." } },
+      { "if_any": ["wardrobe", "organisation", "opp-john-wardrobe-organise"], "then": { "label": "cold", "reason": "Organisation content underperforms on John's channel." } },
+      { "if_any": ["flaw", "93", "opp-john-flaw-first-flip"], "then": { "label": "hot", "reason": "Top trend and John's best-saving format." } }
+    ],
+    "_default": { "label": "warm", "reason": "Solid fit for a flips-first channel." }
+  },
+  "FollowUpPlannerAgent": {
+    "actions": [
+      { "when": "+2d", "channel": "email", "note": "If Loop Vintage is silent, nudge with the flaw-first flip attached." }
+    ],
+    "meeting_ask": true
+  },
+  "CalendarAssistantAgent": {
+    "slots": [
+      { "kind": "post", "weekday": "Mon", "time": "19:00", "title": "SGD 6 jacket — stain first, then the fit" },
+      { "kind": "post", "weekday": "Thu", "time": "19:00", "title": "Rail restock: what sold, what didn't" },
+      { "kind": "post", "weekday": "Sat", "time": "12:00", "title": "Loop Vintage rail — what I'd actually buy" },
+      { "kind": "followup", "weekday": "Wed", "time": "10:00", "title": "Follow up Loop Vintage" }
+    ]
+  },
+  "StatusTrackerAgent": {
+    "_rules": [
+      { "if_any": ["engaged", "interested"], "then": { "ok": true, "status": "engaged" } },
+      { "if_any": ["meeting"], "then": { "ok": true, "status": "meeting" } },
+      { "if_any": ["lost"], "then": { "ok": true, "status": "lost" } },
+      { "if_any": ["packaged"], "then": { "ok": true, "status": "packaged" } },
+      { "if_any": ["researched"], "then": { "ok": true, "status": "researched" } }
+    ],
+    "_default": { "ok": true, "status": "outreached" }
+  },
+
+  "EngagementIngestAgent": { "ok": true, "normalized": true },
+  "ReplyClassifierAgent": {
+    "_rules": [
+      { "if_any": ["interested", "collab", "rail", "call", "keen", "loved"], "then": { "label": "interested", "opportunity_id": "opp-john-brand-gap-loop", "next_status": "engaged" } },
+      { "if_any": ["unsubscribe", "not interested"], "then": { "label": "not_interested", "opportunity_id": "{oid}", "next_status": "lost" } },
+      { "if_any": ["meeting", "calendar"], "then": { "label": "meeting", "opportunity_id": "{oid}", "next_status": "meeting" } }
+    ],
+    "_default": { "label": "noise", "opportunity_id": null, "next_status": null }
+  },
+  "PerformanceAdaptAgent": {
+    "wins": ["Flaw-first flips and rail restocks win on saves and watch time."],
+    "losses": ["Wardrobe organisation content drops off; lowest watch time of the week."],
+    "next_bias": [
+      "Prefer flaw-first flips and weekly restock formats.",
+      "Deprioritize organisation and general outfit inspo.",
+      "Keep Loop Vintage brand-gap hot."
+    ]
+  },
+
+  "ResearchLeadAgent": {
+    "plan": ["audience", "peers", "presence", "pain"],
+    "why": "John's saves cluster on honest condition shots, not styling alone."
+  },
+  "AudienceResearchAgent": {
+    "audience_insight": "20–32s in SG buying secondhand on a budget. They save flips where the flaw is shown first, and distrust hauls that hide condition. Constant comments asking how he cleans things."
+  },
+  "PeerCreatorAnalysisAgent": {
+    "peer_moves": "Peer thrift accounts shoot polished try-ons and never show the stain or the price paid. Gap: flaw-first, price-on-screen honesty."
+  },
+  "PlatformPresenceAgent": {
+    "platform_presence": "Loop Vintage curates the best rail on Haji Lane and posts stills only. No fitting-room video anywhere. John can own that slot."
+  },
+  "PainPointAgent": {
+    "pain_points": "Unpredictable sourcing, stock sitting unlisted, and invented resale valuations that get creators called out in comments."
+  },
+
+  "ProposalGenerationAgent": {
+    "opportunity_id": "{oid}",
+    "week_plan": [
+      { "hook": "SGD 6 jacket — I show you the stain first", "format": "flaw shot + styled fit", "platform": "instagram", "posting_slot": "Mon 19:00 SGT" },
+      { "hook": "Rail restock: what sold and what didn't", "format": "rail walk + prices on screen", "platform": "tiktok", "posting_slot": "Thu 19:00 SGT" },
+      { "hook": "Loop Vintage rail — what I'd actually buy", "format": "in-store fitting room", "platform": "instagram", "posting_slot": "Sat 12:00 SGT" }
+    ],
+    "hero_script": "Six dollars. Here's the stain, before I show you anything else. I'm John. This jacket resells for SGD 400 easily, so the maths is done for you. Bedroom rail, price on screen, and I'll tell you if it doesn't sell. Would you have picked it up with that mark on it?",
+    "captions": {
+      "instagram": "SGD 6 jacket. Stain first, fit second. #thriftsg #secondhand",
+      "tiktok": "Flaw-first flip. Price on screen, no hiding the condition."
+    },
+    "cta": "Save this before your next thrift run. Stores: happy to film an honest rail walk.",
+    "sources": []
+  },
+  "DraftWriterAgent": {
+    "hero_script": "Six dollars. Here's the stain, before I show you anything else. I'm John. The last one like this sold off my rail for SGD 58 — that's what I got, not what I hope for. Bedroom rail, price on screen, and I'll tell you if it doesn't sell. Would you have picked it up with that mark on it?",
+    "captions": {
+      "instagram": "SGD 6 jacket, sold for 58. Stain first, fit second. #thriftsg #secondhand",
+      "tiktok": "Flaw-first flip. Real sold price on screen, no fantasy valuations."
+    },
+    "cta": "Save this before your next thrift run. Loop Vintage — happy to film an honest rail walk.",
+    "sources": ["John's own sold listing (SGD 58)", "Rail restock log"]
+  },
+  "FactCheckerAgent": {
+    "_rules": [
+      { "if_any": ["resells for sgd 400", "resells for $400", "sgd 400 easily"], "then": { "verdict": "fail", "issues": ["Invented resale valuation (SGD 400) with no sold listing."], "must_fix": ["quote the actual sold price or remove the valuation"] } },
+      { "if_any": ["resells for", "worth", "flip this for"], "if_none": ["sold off my rail", "that's what i got", "sold listing"], "then": { "verdict": "fail", "issues": ["Resale claim with no sold-price source."], "must_fix": ["quote the actual sold price or remove the valuation"] } }
+    ],
+    "_default": { "verdict": "pass", "issues": [], "must_fix": [] }
+  },
+  "VoiceCritiqueAgent": {
+    "_rules": [
+      { "if_all": ["john"], "if_any": ["stain", "rail", "price on screen", "flaw", "sold"], "then": { "verdict": "pass", "issues": [], "must_fix": [] } }
+    ],
+    "_default": { "verdict": "fail", "issues": ["Voice missing John's flaw-first framing / price on screen."], "must_fix": ["show the flaw or name the price paid"] }
+  },
+
+  "OutreachStrategyAgent": {
+    "channel_order": ["email", "dm", "call_script"],
+    "angle": "John fills Loop Vintage's missing short-form with honest fitting-room rail walks.",
+    "to": "hello@loopvintage.sg"
+  },
+  "OutreachScriptAgent": {
+    "channel": "call_script",
+    "to": "Loop Vintage",
+    "subject": "",
+    "body": "30s: Hi, I'm John — thrift flips on Instagram, Singapore. You curate the best rail on Haji Lane and post stills only. I film flaw-first, price on screen. Three in-store rail walks next month?"
+  },
+  "PitchEmailAgent": {
+    "channel": "email",
+    "to": "hello@loopvintage.sg",
+    "subject": "John x Loop Vintage — 3 honest rail walks",
+    "body": "Hi Loop Vintage,\n\nI'm John Tan. I flip secondhand for people in Singapore buying on a budget — I show the flaw before the fit and I put the real price on screen.\n\nYour rail is the best curated on Haji Lane and there is no video of it anywhere. I'd like a 3-post trial filmed in store: a flaw-first pick from your rail, a fitting-room 'what I'd actually buy', and an honest what-didn't-sell follow-up. No invented resale valuations.\n\n15 min call this week?\nJohn"
+  },
+  "CDRRootAgent": {
+    "plan": [
+      "select top opportunities",
+      "research in parallel",
+      "package + critique loop",
+      "outreach",
+      "persist_and_schedule"
+    ],
+    "selected_ids": ["opp-john-flaw-first-flip", "opp-john-brand-gap-loop"]
+  }
+}

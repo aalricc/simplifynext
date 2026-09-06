@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import operator
+import os
 import re
 import uuid
 from pathlib import Path
@@ -17,6 +18,7 @@ from typing import Annotated, Any, TypedDict
 
 from pydantic import BaseModel, Field
 
+from shared.fixtures import use_persona_of
 from shared.schemas import CreatorProfile, Opportunity, OpportunityStatus, OpportunityType
 
 DEMO = Path(__file__).resolve().parents[2] / "demo" / "maya"
@@ -109,16 +111,47 @@ def draft_to_opportunity(
     )
 
 
+class ProfileMissing(RuntimeError):
+    """No creator on the request. Never substitute a demo persona."""
+
+
 def load_profile(profile: dict[str, Any] | None = None) -> CreatorProfile:
-    if profile:
-        return CreatorProfile(**profile)
-    if PROFILE.exists():
-        return CreatorProfile(**json.loads(PROFILE.read_text()))
-    return CreatorProfile(id="maya", name="Maya Tan", niche="singapore hawker food", city="Singapore")
+    """The creator this search is for.
+
+    There is deliberately no fallback. Returning a hardcoded persona here meant
+    a request that lost its profile still produced confident, wrong results --
+    Singapore hawker opportunities for a creator in Lisbon.
+    """
+    if not profile:
+        raise ProfileMissing(
+            "Opportunity search requires a creator profile. The request "
+            "arrived without one."
+        )
+    # Callers send the board's profile shape, which is a superset of
+    # CreatorProfile and keys the id as `profile_id` in some paths.
+    data = dict(profile)
+    data.setdefault("id", data.get("profile_id", ""))
+    data.setdefault("name", data.get("display_name", ""))
+    if not data.get("id"):
+        raise ProfileMissing("Creator profile has no id.")
+    # Fixture mode serves this creator's demo data, not Maya's. No-op live.
+    use_persona_of(data)
+    return CreatorProfile(**data)
 
 
 def seed_opportunities(limit: int = 8, source_agent: str | None = None) -> list[dict[str, Any]]:
-    """Fallback so the rest of the team is never blocked (P1 prompt, day-1 rule)."""
+    """Maya's seed opportunities. TESTS AND THE DEMO SEED SCRIPT ONLY.
+
+    This was the day-1 fallback for every harvest agent, so a failed LLM call
+    still returned confident results. With real accounts that means handing one
+    creator's Singapore hawker opportunities to another creator and calling
+    them findings.
+
+    Agents must not call this. `CREATORLOOP_ALLOW_SEED=1` unlocks it for
+    scripts/seed_demo_user.py and the test suite.
+    """
+    if os.getenv("CREATORLOOP_ALLOW_SEED", "0") not in ("1", "true", "True"):
+        return []
     if not SEED.exists():
         return []
     data = json.loads(SEED.read_text()).get("opportunities", [])

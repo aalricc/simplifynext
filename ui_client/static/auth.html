@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in · CreatorLoop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Work+Sans:wght@400;500;600&display=swap">
+<style>
+/* Kitchen Terracotta — the board's own palette, so signing in and the app
+   behind it are visibly the same product. */
+:root{
+  --bg:#ece3d6; --bg-2:#f8f3ea; --line:#dccbb2; --line-2:#c9b696;
+  --ink:#2b211a; --ink-2:#6d5f50; --ink-3:#8a7c6c;
+  --accent:#a44c34; --accent-2:#7d3722; --olive:#5e6b41; --danger:#8c2f1c;
+  --display:"Bricolage Grotesque","Trebuchet MS",Helvetica,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:15px/1.6 "Work Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  display:flex; align-items:center; justify-content:center; padding:32px 20px;
+  background-image:
+    radial-gradient(680px 540px at 14% 16%, rgba(164,76,52,.16), transparent 62%),
+    radial-gradient(600px 500px at 86% 84%, rgba(94,107,65,.13), transparent 64%);
+}
+.card{
+  width:100%; max-width:420px; background:var(--bg-2);
+  border:1px solid var(--line); border-radius:14px; padding:34px 32px 30px;
+  box-shadow:0 18px 44px -28px rgba(43,33,26,.5);
+}
+.brand{
+  display:inline-flex; align-items:center; gap:9px; text-decoration:none;
+  color:var(--ink); margin-bottom:26px;
+}
+.mark{
+  width:26px; height:26px; border-radius:7px; flex:none;
+  background:linear-gradient(140deg,var(--accent),var(--accent-2));
+}
+.brand b{font-family:var(--display); font-weight:800; font-size:17px; letter-spacing:-.02em}
+h1{font-family:var(--display); font-weight:800; font-size:26px; letter-spacing:-.025em; margin:0 0 6px; line-height:1.15}
+.sub{color:var(--ink-2); margin:0 0 24px; font-size:14.5px}
+
+/* tabs */
+.tabs{display:flex; gap:4px; background:var(--bg); border:1px solid var(--line); border-radius:9px; padding:4px; margin-bottom:22px}
+.tab{
+  flex:1; border:0; background:transparent; color:var(--ink-2); cursor:pointer;
+  font:600 13.5px/1 "Work Sans",sans-serif; padding:9px 8px; border-radius:6px;
+  transition:background .15s,color .15s;
+}
+.tab[aria-selected="true"]{background:var(--bg-2); color:var(--ink); box-shadow:0 1px 3px rgba(43,33,26,.12)}
+
+label{display:block; font-weight:600; font-size:12.5px; letter-spacing:.02em; margin:0 0 6px; color:var(--ink-2)}
+.field{margin-bottom:16px}
+input{
+  width:100%; padding:11px 13px; border:1px solid var(--line-2); border-radius:8px;
+  background:#fff; color:var(--ink); font:15px/1.4 "Work Sans",sans-serif;
+}
+input:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:transparent}
+.hint{font-size:12.5px; color:var(--ink-3); margin-top:6px}
+
+button.go{
+  width:100%; margin-top:8px; padding:12px 16px; border:0; border-radius:9px;
+  background:var(--accent); color:#fff; cursor:pointer;
+  font:600 15px/1 "Work Sans",sans-serif; transition:background .15s;
+}
+button.go:hover:not(:disabled){background:var(--accent-2)}
+button.go:disabled{opacity:.6; cursor:progress}
+button.go:focus-visible{outline:2px solid var(--ink); outline-offset:2px}
+
+.msg{
+  margin-top:16px; padding:11px 13px; border-radius:8px; font-size:13.5px;
+  border:1px solid; display:none;
+}
+.msg.show{display:block}
+.msg.error{background:#f7e4de; border-color:#e0b6a8; color:var(--danger)}
+.msg.ok{background:#e6ecdd; border-color:#c2cfa9; color:#3f4a2b}
+
+.demo{
+  margin-top:22px; padding-top:18px; border-top:1px solid var(--line);
+  font-size:13px; color:var(--ink-3);
+}
+.demo b{color:var(--ink-2); font-weight:600}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12.5px; background:var(--bg); padding:1px 5px; border-radius:4px}
+</style>
+</head>
+<body>
+<main class="card">
+  <a class="brand" href="/"><span class="mark" aria-hidden="true"></span><b>CreatorLoop</b></a>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-signin" aria-selected="true" aria-controls="form">Sign in</button>
+    <button class="tab" role="tab" id="tab-signup" aria-selected="false" aria-controls="form">Create account</button>
+  </div>
+
+  <h1 id="title">Welcome back</h1>
+  <p class="sub" id="subtitle">Sign in to pick up your week.</p>
+
+  <form id="form" novalidate>
+    <div class="field" id="name-field" hidden>
+      <label for="name">Your name</label>
+      <input id="name" name="name" type="text" autocomplete="name" placeholder="Maya Tan">
+    </div>
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.com">
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" required
+             autocomplete="current-password" placeholder="••••••••••">
+      <p class="hint" id="pw-hint" hidden>At least 10 characters.</p>
+    </div>
+    <button class="go" type="submit" id="submit">Sign in</button>
+  </form>
+
+  <p class="msg" id="msg" role="status" aria-live="polite"></p>
+
+  <p class="demo">
+    <b>Demo account.</b> Run <code>python scripts/seed_demo_user.py</code> to create
+    <code>demo@creatorloop.local</code> with Maya's data already loaded.
+  </p>
+</main>
+
+<script>
+(function(){
+  var mode = location.pathname === "/signup" ? "signup" : "signin";
+  var $ = function(id){ return document.getElementById(id); };
+
+  function render(){
+    var up = mode === "signup";
+    $("tab-signin").setAttribute("aria-selected", String(!up));
+    $("tab-signup").setAttribute("aria-selected", String(up));
+    $("title").textContent = up ? "Create your account" : "Welcome back";
+    $("subtitle").textContent = up
+      ? "Two minutes to set up, then the agents plan your first week."
+      : "Sign in to pick up your week.";
+    $("submit").textContent = up ? "Create account" : "Sign in";
+    $("name-field").hidden = !up;
+    $("pw-hint").hidden = !up;
+    $("password").setAttribute("autocomplete", up ? "new-password" : "current-password");
+    hide();
+    history.replaceState(null, "", up ? "/signup" : "/signin");
+  }
+
+  function show(text, kind){
+    var m = $("msg");
+    m.textContent = text;
+    m.className = "msg show " + kind;
+  }
+  function hide(){ $("msg").className = "msg"; }
+
+  $("tab-signin").onclick = function(){ mode = "signin"; render(); };
+  $("tab-signup").onclick = function(){ mode = "signup"; render(); };
+
+  $("form").addEventListener("submit", async function(e){
+    e.preventDefault();
+    hide();
+    var email = $("email").value.trim();
+    var password = $("password").value;
+    if (!email || !password) { show("Enter your email and password.", "error"); return; }
+
+    $("submit").disabled = true;
+    var body = { email: email, password: password };
+    if (mode === "signup") body.display_name = $("name").value.trim();
+
+    try {
+      var res = await fetch("/auth/" + (mode === "signup" ? "signup" : "login"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      var data = await res.json().catch(function(){ return {}; });
+      if (!res.ok) {
+        show(data.error || data.detail || "That did not work. Try again.", "error");
+        $("submit").disabled = false;
+        return;
+      }
+      show(mode === "signup" ? "Account created. Setting things up…" : "Signed in. Loading your board…", "ok");
+      location.href = data.next || "/board";
+    } catch (err) {
+      show("Cannot reach the server. Is it running on :8000?", "error");
+      $("submit").disabled = false;
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

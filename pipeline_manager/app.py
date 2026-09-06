@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, Request
 
 from shared.cors import add_cors
+from shared.db import dispose, healthcheck
 from observability.otel import agent_span
 from pipeline_manager import db
 from pipeline_manager.agents.opportunity_clerk import OpportunityClerkAgent
@@ -14,9 +13,7 @@ from pipeline_manager.agents.persist_and_schedule import PersistAndSchedule
 from pipeline_manager.agents.status_tracker import StatusTrackerAgent
 from pipeline_manager.agents.follow_up_planner import FollowUpPlannerAgent
 
-MEMORY_PATH = Path(__file__).resolve().parents[1] / "demo" / "maya" / "memory.json"
-
-app = FastAPI(title="Pipeline Manager", version="0.1.0")
+app = FastAPI(title="Pipeline Manager", version="0.2.0")
 add_cors(app)
 
 
@@ -25,9 +22,14 @@ async def startup() -> None:
     await db.init_db()
 
 
+@app.on_event("shutdown")
+async def shutdown() -> None:
+    await dispose()
+
+
 @app.get("/health")
-def health() -> dict:
-    return {"service": "pipeline_manager", "status": "ok"}
+async def health() -> dict:
+    return {"service": "pipeline_manager", "status": "ok", **(await healthcheck())}
 
 
 @app.post("/pipeline/upsert")
@@ -98,17 +100,56 @@ async def update_status(request: Request) -> dict:
 
 @app.get("/pipeline/memory")
 async def get_memory() -> dict:
-    memory = await db.get_memory()
-    if memory:
-        return memory
-    if MEMORY_PATH.exists():
-        return json.loads(MEMORY_PATH.read_text())
-    return {"wins": [], "losses": [], "next_bias": []}
+    return await db.get_memory() or {"wins": [], "losses": [], "next_bias": []}
 
 
 @app.post("/pipeline/memory")
 async def post_memory(request: Request) -> dict:
+    # No longer mirrored to demo/maya/memory.json: with more than one creator
+    # that write was a race on a single file, and the row is per-profile now.
     body = await request.json()
-    memory = await db.write_memory(body)
-    MEMORY_PATH.write_text(json.dumps(memory, indent=2))
-    return {"ok": True, "memory": memory}
+    return {"ok": True, "memory": await db.write_memory(body)}
+
+
+@app.get("/pipeline/calendar")
+async def list_calendar() -> dict:
+    return {"events": await db.list_calendar_events()}
+
+
+@app.get("/pipeline/rag")
+async def list_rag() -> dict:
+    return {"documents": await db.list_rag_documents()}
+
+
+@app.post("/pipeline/rag")
+async def add_rag(request: Request) -> dict:
+    doc = await request.json()
+    return {"ok": True, "id": await db.add_rag_document(doc)}
+
+
+@app.get("/pipeline/engagement")
+async def list_engagement(unread_only: bool = False) -> dict:
+    return {"items": await db.list_engagement_items(unread_only=unread_only)}
+
+
+@app.post("/pipeline/engagement")
+async def add_engagement(request: Request) -> dict:
+    body = await request.json()
+    item_id = await db.add_engagement_item(
+        source=body.get("source", "email"),
+        payload=body.get("payload") or {},
+        opportunity_id=body.get("opportunity_id"),
+        classification=body.get("classification"),
+    )
+    return {"ok": True, "id": item_id}
+
+
+@app.get("/pipeline/analytics")
+async def list_analytics() -> dict:
+    return {"posts": await db.list_analytics_posts()}
+
+
+@app.post("/pipeline/analytics")
+async def add_analytics(request: Request) -> dict:
+    post = await request.json()
+    return {"ok": True, "id": await db.add_analytics_post(post)}

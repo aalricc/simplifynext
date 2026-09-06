@@ -3,7 +3,6 @@ from uuid import uuid4
 
 from observability.otel import agent_span
 from opportunity_finder.agents.pipeline import OpportunityFinderPipeline
-from opportunity_finder.agents.state import seed_opportunities
 from shared.agent_base import Agent
 from shared.http_clients import get_memory
 
@@ -31,20 +30,25 @@ class OpportunityFinderRoot(Agent):
 
             try:
                 result = await PIPELINE.run({**state, "run_id": run_id, "memory": memory})
-            except Exception as exc:  # noqa: BLE001 - the demo must always return
+            except Exception as exc:  # noqa: BLE001 - report, never fabricate
+                # This used to serve `demo/maya/opportunities_seed.json`. With
+                # real accounts that is one persona's opportunities handed to
+                # someone else and labelled a result -- an empty list plus a
+                # visible note is the honest answer.
                 return {
                     "run_id": run_id,
-                    "opportunities": seed_opportunities(limit),
+                    "opportunities": [],
                     "queries": [],
-                    "notes": [f"{self.name}: pipeline failed ({exc}); served seed"],
-                    "mode": "seed",
+                    "notes": [f"{self.name}: pipeline failed ({exc})"],
+                    "mode": "failed",
+                    "error": str(exc),
                 }
 
-            opportunities = result.get("opportunities") or seed_opportunities(limit)
+            opportunities = result.get("opportunities") or []
             return {
                 "run_id": run_id,
                 "opportunities": opportunities[:limit],
                 "queries": result.get("queries", []),
                 "notes": result.get("notes", []),
-                "mode": "live" if result.get("opportunities") else "seed",
+                "mode": "live" if opportunities else "empty",
             }

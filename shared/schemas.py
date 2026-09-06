@@ -48,7 +48,9 @@ class CreatorProfile(BaseModel):
 
 
 class SearchRequest(BaseModel):
-    profile_id: str = "maya"
+    # Required. It defaulted to "maya", so a request that lost its creator
+    # still searched -- confidently, for the wrong person.
+    profile_id: str
     niche: str
     city: str
     limit: int = 8

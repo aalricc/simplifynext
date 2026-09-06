@@ -68,6 +68,7 @@ class OpportunityScorerAgent(Agent):
                     SYSTEM,
                     f"{profile_brief(profile)}{memory_block}\n\nOpportunities:\n{listing}",
                     ScoreList,
+                    agent=self.name,
                 )
             except LLMError as exc:
                 ranked = sorted(items, key=lambda o: o.get("score", 0), reverse=True)[:limit]

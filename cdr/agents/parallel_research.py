@@ -1,7 +1,8 @@
 import asyncio
 from typing import Any
 
-from cdr.agents._util import ping, with_span
+from cdr import agui_map
+from cdr.agents._util import artifact, ping, with_span
 from cdr.agents.audience_research import AudienceResearchAgent
 from cdr.agents.pain_point import PainPointAgent
 from cdr.agents.peer_creator_analysis import PeerCreatorAnalysisAgent
@@ -35,5 +36,7 @@ class ParallelResearch(Agent):
                 risks=["unsourced health claims"],
             )
             state["brief"] = brief.model_dump()
+            artifact(state, "render_research_brief",
+                     agui_map.research_brief_args(state["brief"], opp))
             ping(state, self.name, "parallel", "Gather complete.", artifact_ref="ResearchBrief")
         return state

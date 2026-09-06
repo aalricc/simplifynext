@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CreatorLoop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Work+Sans:wght@400;500;600&display=swap">
+<style>
+/* ============ DAYLIGHT KITCHEN ============
+   The FLIP landing pattern - one bold headline, one filled button, a
+   linked-particle field - on the board's own clay ground, so the landing
+   page and the board it opens are visibly the same product. */
+:root{
+  --bg:#ece3d6;
+  --bg-2:#f8f3ea;
+  --line:#dccbb2;
+  --ink:#2b211a;
+  --ink-2:#6d5f50;
+  --ink-3:#726455;
+  --accent:#a44c34;
+  --accent-2:#7d3722;    /* the board's accents exactly */
+  --warm:#875e19;
+  --olive:#5e6b41;
+  --display:"Bricolage Grotesque","Trebuchet MS",Helvetica,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:15px/1.6 "Work Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  /* The field is position:fixed, so letting the page scroll costs
+     nothing - and on a short screen the footer would otherwise clip. */
+  overflow-x:hidden;
+}
+
+/* the particle field sits behind everything, page never scrolls */
+#field{position:fixed;inset:0;z-index:0;display:block;
+  /* canvas is a replaced element: inset:0 alone leaves it at its intrinsic
+     300x150, so the field must be sized explicitly or it bunches top-left. */
+  width:100%;height:100%}
+/* two soft blooms so the dark ground isn't flat */
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(760px 620px at 12% 18%, rgba(164,76,52,.20), transparent 62%),
+    radial-gradient(680px 560px at 88% 82%, rgba(94,107,65,.16), transparent 64%),
+    radial-gradient(520px 420px at 72% 12%, rgba(135,94,25,.12), transparent 66%);
+}
+/* Paints after the canvas (same z-index, later in DOM), so the field
+   fades out behind the headline instead of drifting through it. */
+.veil{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 780px 430px at 50% 47%,
+    rgba(236,227,214,.88) 0%, rgba(236,227,214,.72) 42%, rgba(236,227,214,0) 74%)}
+.wrap{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+/* ---------------- topbar ---------------- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 40px;border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .logo{
+  width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#fdf9f2;font-size:19px;
+}
+.brand h1{margin:0;font:800 20px/1 var(--display);letter-spacing:-.01em}
+.brand p{margin:3px 0 0;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink-3);white-space:nowrap}
+.topnav{display:flex;align-items:center;gap:8px}
+.btn-nav{
+  white-space:nowrap;color:var(--ink-2);text-decoration:none;padding:9px 16px;border-radius:999px;
+  font-size:13.5px;font-weight:500;transition:background .18s,color .18s;
+}
+.btn-nav:hover{color:var(--ink);background:rgba(43,33,26,.06)}
+
+/* ---------------- hero ---------------- */
+main{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:0 32px 40px;
+}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:9px;margin-bottom:26px;
+  padding:7px 15px 7px 11px;border-radius:999px;
+  background:rgba(255,255,255,.55);border:1px solid var(--line);
+  font-size:12px;color:var(--ink-2);
+}
+.eyebrow .pip{width:7px;height:7px;border-radius:50%;background:var(--olive);
+  box-shadow:0 0 0 3px rgba(94,107,65,.22)}
+h2.hero{
+  margin:0;max-width:15ch;
+  font:800 clamp(38px,5.6vw,66px)/1.08 var(--display);letter-spacing:-.025em;
+}
+h2.hero .accent{
+  background:linear-gradient(120deg,var(--accent),var(--warm));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+p.sub{
+  margin:22px 0 0;max-width:52ch;font-size:16.5px;line-height:1.62;color:var(--ink-2);
+}
+
+/* ---------------- the one button ---------------- */
+.cta{display:flex;align-items:center;gap:22px;margin-top:38px}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:11px;
+  padding:16px 32px;border-radius:999px;border:0;cursor:pointer;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#fdf9f2;font:600 16px/1 "Work Sans",sans-serif;text-decoration:none;
+  box-shadow:0 10px 30px rgba(164,76,52,.42);
+  transition:transform .2s cubic-bezier(.23,1,.32,1),box-shadow .2s;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(164,76,52,.55)}
+.btn-primary .arrow{transition:transform .2s cubic-bezier(.23,1,.32,1)}
+.btn-primary:hover .arrow{transform:translateX(4px)}
+.btn-secondary{
+  display:inline-flex;align-items:center;padding:15px 26px;border-radius:999px;
+  border:1px solid var(--line);color:var(--ink);text-decoration:none;
+  font:600 15px/1 "Work Sans",sans-serif;background:rgba(248,243,234,.7);
+  transition:background .18s,border-color .18s;
+}
+.btn-secondary:hover{background:var(--bg-2);border-color:var(--ink-3)}
+@media (prefers-reduced-motion:reduce){
+  .btn-primary,.btn-primary .arrow{transition:none}
+  .btn-primary:hover{transform:none}
+}
+.btn-ghost{
+  color:var(--ink-3);text-decoration:none;font-size:14.5px;
+  border-bottom:1px solid transparent;padding-bottom:2px;transition:color .18s,border-color .18s;
+}
+.btn-ghost:hover{color:var(--ink);border-color:var(--accent)}
+
+/* ---------------- three proof chips ---------------- */
+.proof{display:flex;gap:14px;margin-top:56px;flex-wrap:wrap;justify-content:center}
+.chip{
+  display:flex;align-items:center;gap:11px;padding:13px 20px;border-radius:16px;
+  background:rgba(255,255,255,.55);border:1px solid var(--line);
+  backdrop-filter:blur(6px);
+}
+.chip b{font:800 17px/1 var(--display);color:var(--ink)}
+.chip span{font-size:12.5px;color:var(--ink-3);text-align:left;line-height:1.35}
+.chip .rule{width:1px;height:26px;background:var(--line)}
+
+footer{
+  padding:16px 40px;text-align:center;font-size:11.5px;color:var(--ink-3);
+  border-top:1px solid var(--line);
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+/* Below this the two nav anchors wrap mid-phrase and shove the brand;
+   they are secondary to the one button, so they go. */
+@media (max-width:560px){ .topnav{display:none} }
+@media (max-width:760px){
+  .topbar{padding:16px 20px}
+  main{padding:0 20px 32px}
+  .proof{gap:10px}
+  .cta{flex-direction:column;gap:16px}
+}
+</style>
+</head>
+<body>
+
+<canvas id="field" aria-hidden="true"></canvas>
+<div class="veil" aria-hidden="true"></div>
+
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">◐</span>
+      <div>
+        <h1>CreatorLoop</h1>
+        <p>plan · act · adapt</p>
+      </div>
+    </div>
+    <nav class="topnav">
+      
+    </nav>
+  </header>
+
+  <main>
+  
+
+    <h2 class="hero">One click runs<br><span class="accent">your whole week.</span></h2>
+
+    <p class="sub">
+      CreatorLoop finds the ideas, writes the scripts, pitches the brands and books
+      the calendar — then reads what came back and changes next week's plan itself.
+    </p>
+
+    <div class="cta">
+      <!-- href is rewritten to /board below when a session already exists, so
+           returning users are not sent through a sign-up they do not need. -->
+      <a class="btn-primary" id="cta" href="/signup">
+        Set up your studio <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="btn-secondary" id="cta-signin" href="/signin">Sign in</a>
+    </div>
+
+    <div class="proof">
+      <div class="chip"><b>39</b><div class="rule"></div><span>named agents,<br>not "AI is thinking"</span></div>
+      <div class="chip"><b>MCP</b><div class="rule"></div><span>real tool calls,<br>traced end to end</span></div>
+      <div class="chip"><b>2</b><div class="rule"></div><span>weeks — it adapts<br>on the second</span></div>
+    </div>
+  </main>
+
+  
+</div>
+
+<script>
+/* Linked-particle field - the same idea as the tsParticles config in the
+   reference (50 nodes, 150px links, drift, hover-repulse), hand-rolled so
+   the page stays dependency-free and the server keeps serving plain static
+   files. Tinted to the palette instead of white. */
+(() => {
+  const canvas = document.getElementById('field');
+  const ctx = canvas.getContext('2d');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Density follows area so the web reads the same on a laptop and a
+  // projector; a fixed count goes sparse the moment the screen grows.
+  const DENSITY = 1 / 12000, LINK = 168, SPEED = .28, REPULSE = 110;
+  const TINTS = ['164,76,52', '135,94,25', '94,107,65', '194,171,138'];
+  let w, h, dpr, nodes = [];
+  const pointer = { x: -9999, y: -9999 };
+
+  function resize() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    w = canvas.clientWidth; h = canvas.clientHeight;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function seed() {
+    const count = Math.round(Math.min(Math.max(w * h * DENSITY, 40), 150));
+    nodes = Array.from({ length: count }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      vx: (Math.random() - .5) * SPEED, vy: (Math.random() - .5) * SPEED,
+      r: 1 + Math.random() * 2.6,
+      tint: TINTS[(Math.random() * TINTS.length) | 0],
+    }));
+  }
+
+  function frame() {
+    ctx.clearRect(0, 0, w, h);
+
+    for (const n of nodes) {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < -20) n.x = w + 20; if (n.x > w + 20) n.x = -20;
+      if (n.y < -20) n.y = h + 20; if (n.y > h + 20) n.y = -20;
+
+      // push away from the cursor, then ease back to drift
+      const dx = n.x - pointer.x, dy = n.y - pointer.y;
+      const d = Math.hypot(dx, dy);
+      if (d < REPULSE && d > 0) {
+        const push = (REPULSE - d) / REPULSE * 1.6;
+        n.x += (dx / d) * push; n.y += (dy / d) * push;
+      }
+    }
+
+    // links first, so nodes sit on top of the web
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i], b = nodes[j];
+        const d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (d < LINK) {
+          ctx.strokeStyle = `rgba(164,76,52,${(1 - d / LINK) * .26})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        }
+      }
+    }
+    for (const n of nodes) {
+      ctx.fillStyle = `rgba(${n.tint},.52)`;
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2); ctx.fill();
+    }
+
+    if (!reduced) requestAnimationFrame(frame);
+  }
+
+  addEventListener('resize', () => { resize(); seed(); });
+  addEventListener('pointermove', e => { pointer.x = e.clientX; pointer.y = e.clientY; });
+  addEventListener('pointerleave', () => { pointer.x = pointer.y = -9999; });
+
+  resize(); seed(); frame();
+})();
+
+/* Already signed in? Send them to the board (or finish onboarding) rather
+   than through a sign-up they do not need. */
+(async function(){
+  try {
+    const res = await fetch("/api/config");
+    if (!res.ok) return;
+    const cfg = await res.json();
+    if (!cfg.authenticated) return;
+    const cta = document.getElementById("cta");
+    const signin = document.getElementById("cta-signin");
+    cta.setAttribute("href", cfg.onboarding_required ? "/onboarding" : "/board");
+    cta.firstChild.textContent = cfg.onboarding_required
+      ? "Finish setting up "
+      : "Open your studio board ";
+    if (signin) signin.hidden = true;
+  } catch (e) { /* landing page still works signed out */ }
+})();
+</script>
+</body>
+</html>

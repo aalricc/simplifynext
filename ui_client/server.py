@@ -16,6 +16,7 @@ stream falls back to fixtures and says so on screen rather than dying.
 Standard library only - no pip install needed to run the story.
 """
 
+import http.client
 import json
 import os
 import sys
@@ -39,6 +40,10 @@ CDR_URL = os.environ.get("CDR_AGUI_URL", "http://localhost:8084/ag-ui")
 USE_FIXTURES = os.environ.get("USE_FIXTURES", "1") not in ("0", "false", "False")
 PAUSE_BEFORE_SEND = os.environ.get("PAUSE_BEFORE_SEND", "0") not in ("0", "false", "False")
 DEMO_SPEED = float(os.environ.get("DEMO_SPEED", "1.0"))
+# Live runs are LLM-paced: a whole campaign takes minutes, and long gaps between
+# SSE frames are normal. This is the socket timeout for the whole proxied
+# stream, not just the connect - a refused connection still fails immediately.
+LIVE_TIMEOUT = float(os.environ.get("LIVE_TIMEOUT", "300"))
 
 WEEK_FIXTURES = {
     "1": FIXTURES / "run_events.jsonl",
@@ -151,25 +156,38 @@ def proxy_live(body, emit):
         method="POST",
     )
     try:
-        resp = urllib.request.urlopen(req, timeout=10)
+        resp = urllib.request.urlopen(req, timeout=LIVE_TIMEOUT)
     except (urllib.error.URLError, OSError, TimeoutError) as exc:
         print(f"[live] CDR unreachable at {CDR_URL}: {exc}", file=sys.stderr)
         return False
 
+    # The read loop needs the same guard as the connect. Without it a stalled
+    # CDR raised TimeoutError out of the handler: the browser saw a dead stream,
+    # the fixture fallback below never ran, and the board hung mid-demo.
     got_any = False
-    with resp:
-        for raw in resp:
-            line = raw.decode("utf-8", "replace").rstrip("\n")
-            if not line.startswith("data:"):
-                continue
-            payload = line[5:].strip()
-            if not payload or payload == "[DONE]":
-                continue
-            try:
-                emit(json.loads(payload))
-                got_any = True
-            except json.JSONDecodeError:
-                continue
+    try:
+        with resp:
+            for raw in resp:
+                line = raw.decode("utf-8", "replace").rstrip("\n")
+                if not line.startswith("data:"):
+                    continue
+                payload = line[5:].strip()
+                if not payload or payload == "[DONE]":
+                    continue
+                try:
+                    emit(json.loads(payload))
+                    got_any = True
+                except json.JSONDecodeError:
+                    continue
+    except (TimeoutError, OSError, urllib.error.URLError, http.client.HTTPException) as exc:
+        print(f"[live] stream from {CDR_URL} broke: {exc}", file=sys.stderr)
+        if got_any:
+            # Partway through a real run - say so rather than replaying a
+            # fixture on top of live events the board has already drawn.
+            emit({"type": "CUSTOM", "name": "agent_trace", "value": {
+                "agent": "RunSupervisor", "pattern": "custom", "service": "ui",
+                "status": "fail", "summary": f"Live stream ended early: {exc}"}})
+            emit({"type": "RUN_FINISHED", "runId": ""})
     return got_any
 
 
@@ -246,7 +264,12 @@ class Handler(BaseHTTPRequestHandler):
         route = urlparse(self.path)
         path = route.path
 
-        if path in ("/", "/index.html"):
+        # The landing page is the front door; the board is the app behind it.
+        # /index.html still resolves to the board so any bookmark or deep link
+        # from before the landing page existed keeps working.
+        if path in ("/", "/landing.html"):
+            return self._file(STATIC / "landing.html")
+        if path in ("/board", "/board/", "/index.html"):
             return self._file(STATIC / "index.html")
         if path == "/api/healthz":
             return self._json({"ok": True, "mode": "fixture" if USE_FIXTURES else "live"})
@@ -306,10 +329,15 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Cache-Control", "no-cache")
-        self.send_header("Connection", "keep-alive")
+        # HTTP/1.1 with neither Content-Length nor chunked encoding gives the
+        # client no way to see the response end, so keep-alive left every
+        # finished run holding its socket open. Browsers allow ~6 per host, so
+        # a few Run clicks would stall the board's own asset requests.
+        self.send_header("Connection", "close")
         self.send_header("X-Accel-Buffering", "no")
         self._cors()
         self.end_headers()
+        self.close_connection = True
 
         closed = threading.Event()
 
@@ -337,6 +365,9 @@ class Handler(BaseHTTPRequestHandler):
                     replay(run_id, thread_id, week, speed, emit)
         except (BrokenPipeError, ConnectionResetError):
             closed.set()
+        except Exception as exc:  # never leave the board spinning on a dead stream
+            print(f"[stream] run {run_id} failed: {exc}", file=sys.stderr)
+            emit({"type": "RUN_ERROR", "runId": run_id, "message": str(exc)})
         finally:
             with _cancel_lock:
                 _cancelled.discard(run_id)

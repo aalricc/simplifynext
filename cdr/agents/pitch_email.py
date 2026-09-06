@@ -1,6 +1,7 @@
 from typing import Any
 
-from cdr.agents._util import ping, with_span
+from cdr import agui_map
+from cdr.agents._util import artifact, ping, with_span
 from cdr.llm import complete_json
 from shared.agent_base import Agent
 from shared.schemas import OutreachDraft
@@ -36,5 +37,8 @@ class PitchEmailAgent(Agent):
                 status="drafted",
             )
             state.setdefault("outreach", []).extend([draft.model_dump(), dm.model_dump()])
+            for row in (draft.model_dump(), dm.model_dump()):
+                name, args = agui_map.outreach_args(row, opp)
+                artifact(state, name, args)
             ping(state, self.name, "sequential", "Email + DM drafted.", artifact_ref="OutreachDraft")
         return state

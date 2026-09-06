@@ -68,6 +68,7 @@ class CollabScoutAgent(Agent):
                     f"Web evidence:\n{format_hits(hits)}",
                     DraftList,
                     model=FAST_MODEL,
+                    agent=self.name,
                 )
             except LLMError as exc:
                 return self._fallback(f"llm failed ({exc})")

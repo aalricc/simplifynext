@@ -1,15 +1,27 @@
+"""Service-to-service HTTP. Every client here carries the tenant headers.
+
+`client()` is the only place an outbound httpx client is built, so a new call
+site inherits tenancy instead of having to remember it. If you construct
+`httpx.AsyncClient` directly somewhere else, the request arrives with no
+profile and the receiving service's database layer raises TenantError.
+"""
+
 import os
 
 import httpx
+
+from shared.tenant import outbound_headers
 
 OPPORTUNITY_FINDER_URL = os.getenv("OPPORTUNITY_FINDER_URL", "http://localhost:8081")
 PIPELINE_MANAGER_URL = os.getenv("PIPELINE_MANAGER_URL", "http://localhost:8082")
 ENGAGEMENT_LISTENER_URL = os.getenv("ENGAGEMENT_LISTENER_URL", "http://localhost:8083")
 CDR_URL = os.getenv("CDR_URL", "http://localhost:8084")
+MCP_URL = os.getenv("MCP_URL", "http://localhost:8085")
 
 
-def client(timeout: float = 30.0) -> httpx.AsyncClient:
-    return httpx.AsyncClient(timeout=timeout)
+def client(timeout: float = 30.0, profile_id: str | None = None) -> httpx.AsyncClient:
+    """An httpx client pre-loaded with this request's tenant headers."""
+    return httpx.AsyncClient(timeout=timeout, headers=outbound_headers(profile_id))
 
 
 async def find_opportunities(payload: dict) -> dict:

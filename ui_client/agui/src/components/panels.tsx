@@ -17,13 +17,16 @@ function useStickToBottom(dep: unknown) {
 
 /* ------------------------------------------------------------------ */
 
+export type ProfileChip = { id: string; name: string; handle: string };
+
 export function CampaignBar({
-  niche, city, setNiche, setCity, pause, setPause, mode, board, onRun, onStop,
+  niche, city, setNiche, setCity, pause, setPause, mode, board, profile, onRun, onStop,
 }: {
   niche: string; city: string;
   setNiche: (v: string) => void; setCity: (v: string) => void;
   pause: boolean; setPause: (v: boolean) => void;
   mode: string; board: Board;
+  profile: ProfileChip | null;
   onRun: () => void; onStop: () => void;
 }) {
   return (
@@ -38,8 +41,13 @@ export function CampaignBar({
         <label>City<input value={city} onChange={(e) => setCity(e.target.value)} /></label>
         <label>Profile
           <div className="profile-chip">
-            <span className="avatar">M</span>
-            <span><b>Maya Tan</b><i>@mayacooks.sg</i></span>
+            <span className="avatar">
+              {(profile?.name || profile?.handle || "?").trim().charAt(0).toUpperCase()}
+            </span>
+            <span>
+              <b>{profile?.name || "Loading…"}</b>
+              <i>{profile?.handle ? `@${profile.handle}` : ""}</i>
+            </span>
           </div>
         </label>
       </div>
@@ -62,17 +70,21 @@ export function CampaignBar({
   );
 }
 
+/* The lede. The counts live here rather than in each panel's badge, so the
+   first thing read is what happened, not how many rows a panel holds. */
 export function RunStatus({ board }: { board: Board }) {
   const cls = board.running ? "running" : board.traces.length ? "done" : "";
   return (
     <div className={`run-status ${cls}`}>
       <span className="dot" />
-      <span>{board.statusLine}</span>
+      <span id="run-status-text">{board.statusLine}</span>
       <span className="spacer" />
-      <span>
-        {board.runId ? `run ${board.runId} · ` : ""}
-        {board.traces.length} agent steps · {board.artifacts.length} artifacts
-      </span>
+      <span id="run-meta">{board.runId ? `run ${board.runId}` : ""}</span>
+      <div className="lede-stats">
+        <div><span>{board.traces.length}</span><small>agent steps</small></div>
+        <div><span>{board.mcp.length}</span><small>tool calls</small></div>
+        <div><span>{board.artifacts.length}</span><small>artifacts</small></div>
+      </div>
     </div>
   );
 }
@@ -81,7 +93,7 @@ export function AgentTrace({ board }: { board: Board }) {
   const ref = useStickToBottom(board.traces.length);
   return (
     <div className="panel grow">
-      <h2>Live agent trace <span className="count">{board.traces.length}</span></h2>
+      <h2>Agent trace</h2>
       <p className="hint">OTEL span names. Every line is a real named agent, not “AI is thinking”.</p>
       <div className="trace" ref={ref as any}>
         {board.traces.map((t) => (
@@ -102,7 +114,7 @@ export function AgentTrace({ board }: { board: Board }) {
 export function McpPanel({ board }: { board: Board }) {
   return (
     <div className="panel">
-      <h2>MCP tool calls <span className="count">{board.mcp.length}</span></h2>
+      <h2>MCP tool calls</h2>
       <ul className="mcp">
         {board.mcp.length === 0 && <li className="empty">No tool calls yet.</li>}
         {board.mcp.map((c) => (
@@ -117,8 +129,9 @@ export function OpportunityTable({ board }: { board: Board }) {
   return (
     <div className="panel">
       <h2>Opportunities <span className="count">{board.opportunities.length}</span></h2>
+      <p className="hint">Ranked by the scorer, filtered to the creator's niche.</p>
       <table className="opps">
-        <thead><tr><th>Type</th><th>Title</th><th className="num">Score</th><th>Status</th></tr></thead>
+        <thead><tr><th className="num">Score</th><th>Title</th><th>Type</th><th>Status</th></tr></thead>
         <tbody>
           {board.opportunities.length === 0 && (
             <tr className="empty"><td colSpan={4}>Run a campaign to fill the board.</td></tr>
@@ -126,10 +139,12 @@ export function OpportunityTable({ board }: { board: Board }) {
           {board.opportunities.map((o) => {
             const cls = o.score == null ? "lo" : o.score >= 0.8 ? "hi" : o.score >= 0.6 ? "mid" : "lo";
             return (
+              // Score leads: the list is sorted by it, so it is the column the
+              // eye should land on first.
               <tr key={o.opportunity_id} title={o.rationale ?? ""}>
-                <td><span className={`type-chip ${o.type}`}>{String(o.type).replace("_", " ")}</span></td>
-                <td>{o.title}</td>
                 <td className="num"><span className={`score ${cls}`}>{o.score == null ? "—" : o.score.toFixed(2)}</span></td>
+                <td>{o.title}</td>
+                <td><span className={`type-chip ${o.type}`}>{String(o.type).replace("_", " ")}</span></td>
                 <td><span className="type-chip">{o.status}</span></td>
               </tr>
             );
@@ -173,7 +188,8 @@ export function CalendarStrip({ board }: { board: Board }) {
   const cal = board.calendar;
   return (
     <div className="panel">
-      <h2>Week <span className="count subtle">{cal ? `of ${cal.week_of}` : "—"}</span></h2>
+      <h2>The week <span className="count subtle">{cal ? `of ${cal.week_of}` : "—"}</span></h2>
+      <p className="hint">Slots written by the pipeline manager.</p>
       <div className="calendar">
         {(cal?.slots ?? []).map((d) => (
           <div className="day" key={d.day}>
@@ -227,7 +243,7 @@ export function ArtifactDrawer({ board }: { board: Board }) {
   const ref = useStickToBottom(board.artifacts.length);
   return (
     <div className="panel grow">
-      <h2>Artifacts <span className="count">{board.artifacts.length}</span></h2>
+      <h2>Artifacts</h2>
       <p className="hint">Agent tool calls rendered as components, not chat text.</p>
       <div className="artifacts" ref={ref}>
         {board.artifacts.length === 0 ? (

@@ -4,40 +4,68 @@ import asyncio
 import json
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
+from cdr import run_store
 from cdr.agui import router as agui_router
-from cdr.runtime import as_run_state, get_run, queue
-from cdr.service import execute_run, start_run
+from cdr.runtime import as_run_state, cancel, get_run, queue
+from cdr.service import ProfileMissing, execute_run, start_run
 from harness.agentcore import runtime_payload
 from shared.cors import add_cors
+from shared.db import dispose, healthcheck
 
 load_dotenv()
 
-app = FastAPI(title="CDR Agent", version="0.2.0")
+app = FastAPI(title="CDR Agent", version="0.3.0")
 add_cors(app)
 app.include_router(agui_router)
 
 
+@app.on_event("shutdown")
+async def _shutdown() -> None:
+    await run_store.shutdown()
+    await dispose()
+
+
 @app.get("/health")
-def health() -> dict:
-    return {"service": "cdr", "status": "ok", "runtime": runtime_payload()}
+async def health() -> dict:
+    return {
+        "service": "cdr",
+        "status": "ok",
+        "runtime": runtime_payload(),
+        **(await healthcheck()),
+    }
 
 
 @app.post("/cdr/run")
 async def run(request: Request) -> dict:
     body = await request.json()
-    run_id = start_run(body)
+    try:
+        run_id = await start_run(body)
+    except ProfileMissing as exc:
+        raise HTTPException(status_code=401, detail=str(exc)) from exc
     asyncio.create_task(execute_run(run_id, body))
     return {"run_id": run_id}
 
 
+@app.post("/cdr/runs/{run_id}/stop")
+async def stop_run(run_id: str) -> dict:
+    """End a run early. This never gates the agents -- it stops the stream."""
+    cancel(run_id)
+    return {"stopped": run_id}
+
+
 @app.get("/cdr/runs/{run_id}")
-def get_run_http(run_id: str) -> dict:
+async def get_run_http(run_id: str) -> dict:
     rec = get_run(run_id)
     if not rec:
-        return {"run_id": run_id, "events": [], "note": "unknown run"}
+        # Not in memory: the service may have restarted mid-demo. History now
+        # outlives the process, so look it up instead of giving up.
+        events = await run_store.load_run_events(run_id)
+        if not events:
+            return {"run_id": run_id, "events": [], "note": "unknown run"}
+        return {"run_id": run_id, "events": events, "status": "done", "source": "database"}
     return as_run_state(run_id).model_dump(mode="json") | {
         "status": rec.get("status"),
         "packages": rec.get("packages", []),
