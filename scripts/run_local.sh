@@ -29,7 +29,7 @@ fi
 echo "applying migrations…"
 $PY -m alembic upgrade head
 
-$PY -m uvicorn mcp.server:app --port 8085 --reload &
+$PY -m uvicorn mcp_server.server:app --port 8085 --reload &
 $PY -m uvicorn opportunity_finder.app:app --port 8081 --reload &
 $PY -m uvicorn pipeline_manager.app:app --port 8082 --reload &
 $PY -m uvicorn engagement_listener.app:app --port 8083 --reload &

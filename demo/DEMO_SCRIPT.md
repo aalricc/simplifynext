@@ -1,188 +1,180 @@
 # CreatorLoop — 3:00 demo script
 
-Recorded from the UI at **http://localhost:8000** (or the AG-UI client on :5173).
-Run with `DEMO_SPEED=0.6` — every cue below is measured against that setting.
-
-```bash
-DEMO_SPEED=0.6 python3 ui_client/server.py
-```
-
-One browser tab. One human action in the whole video: the **Run campaign** button,
-clicked twice.
-
----
+Every agent name, badge and status line below is copied from a real run. If a
+cue does not match what you see, the run changed — re-check before recording.
 
 ## Setup before you hit record
 
-- Window at 1600×1000 or wider, so all three columns fit.
-- Board idle, nothing run yet. Mode badge reads `FIXTURE MODE` (or `LIVE · :8084` on day 5).
-- CopilotKit sidebar closed. The board is the demo.
-- Have `demo/maya/profile.json` open in a second tab if a judge asks who Maya is.
+```bash
+python scripts/seed_demo_user.py     # once: creates maya / henry / john
+DEMO_SPEED=8 ./scripts/run_local.sh  # pacing: ~18s per campaign
+```
+
+- `USE_FIXTURES=1` in `.env`. Every take is then identical and finishes in
+  seconds. With it off the agents really call Groq — 3-5 minutes, different
+  every time, and the scripted critique beats will not fire.
+- `DEMO_SPEED` is frames per second on the UI's stream. It slows delivery to
+  the browser, not the agents. `8` gives ~18s; drop to `5` for ~28s if you
+  narrate slowly. Unset, a campaign finishes in about **one second** — far too
+  fast to talk over.
+- Window 1600×1000 or wider so all three columns fit.
+- Signed out, on `http://localhost:8000`.
+- Sign-in for all three demo accounts: `<name>@creatorloop.local` /
+  `creatorloop-demo`.
 
 ---
 
-## 0:00 — 0:25 · The problem
+## 0:00 — 0:20 · The problem
 
-> "This is Maya. She cooks hawker food in an HDB kitchen for about eight thousand
-> people. She wants three posts a week and one small brand deal.
+**On screen:** the landing page, then sign in as `maya@creatorloop.local`.
+
+> "This is Maya. She cooks hawker food in an HDB kitchen for about eight
+> thousand people, and she wants three posts a week and one small brand deal.
 >
-> Right now every week starts from a blank page. Find the trend, write the hook,
-> shoot it, caption it, then cold-email a stall owner who has never heard of her.
-> It's four hours of admin before any cooking happens, so two of the three posts
-> never get made."
-
-**On screen:** the idle board. Campaign bar with niche, city, Maya, and one button.
-
-> "The kick-off brief asked for something that plans, acts, and adapts over time.
-> That's the whole job here."
+> Every week starts from a blank page — find the trend, write the hook, shoot
+> it, caption it, then cold-email a stall owner who has never heard of her. So
+> two of the three posts never get made.
+>
+> The brief asked for something that plans, acts and adapts over time. That's
+> the job."
 
 ---
 
-## 0:25 — 0:50 · The architecture
+## 0:20 — 0:45 · The architecture
 
-**On screen:** stay on the board, point at the left and right columns.
+**On screen:** the board, idle. Point at the left and right columns.
 
-> "CreatorLoop is five services and a shared MCP tool server. An Opportunity
-> Finder, a CDR orchestrator running LangGraph graphs under a DeepAgents root,
-> a Pipeline Manager, an Engagement Listener, and this UI.
+> "Six services: an Opportunity Finder, a CDR orchestrator running LangGraph
+> graphs under a DeepAgents-style root, a Pipeline Manager, an Engagement
+> Listener, an MCP tool server, and this UI — all over one Postgres database.
 >
-> Thirty-nine named agents run across them. Not one mega-prompt — every one of
-> them shows up by name on the left with the pattern it uses: parallel,
-> sequential, loop, tool, custom, llm. Those are the OpenTelemetry span names,
-> on screen, live.
+> Thirty-five named agents run across them. Not one mega-prompt. Each appears
+> on the left by name with the pattern it uses, and those are the OpenTelemetry
+> span names, live.
 >
-> The human's job is one click."
+> Every creator signs up and gets their own board. The human's job is one click."
 
 ---
 
-## 0:50 — 1:20 · Run the campaign, parallel research
+## 0:45 — 1:20 · Run the campaign — parallel research
 
-**Click `Run campaign`.**
+**Click `Run campaign`.** Trace rows, in order:
 
-| Cue | What lands |
+| Cue | Trace row |
 |---|---|
-| 0:52 | `FinderFanoutAgent` · **parallel** — four scouts start at once |
-| 0:55 | MCP panel lights up: `search`, `places` |
-| 1:01 | Opportunity table fills with 6 scored rows |
-| 1:09 | **Research brief card** renders in the artifact drawer |
-| 1:15 | **Content package v1** card renders |
+| ~0:47 | `CDRRootAgent` · **custom** — "Planning campaign; tools = research/propose/qa/outreach/persist" |
+| ~0:49 | `CDRRootAgent` · custom — "Selected [...]" — two opportunities |
+| ~0:52 | `ParallelResearch` · **parallel** — "Fan-out: audience, peers, presence, pain" |
+| ~0:54 | Four `llm` rows land together: Audience / PeerCreator / PlatformPresence / PainPoint |
+| ~0:58 | `AudienceResearchAgent` · **tool** — "retrieve_creator_memory used" |
+| ~1:00 | `ParallelResearch` · parallel — "Gather complete" |
+| ~1:05 | Opportunity table fills; **research brief** card in the drawer |
+| ~1:12 | `ProposalGenerationAgent` · llm — "Draft package ready" |
 
-> "One click. Four scouts fan out in parallel — trends, brand gaps, collabs, and
-> a places lookup through MCP. They gather, dedupe fourteen candidates down to
-> six, and score them against Maya's voice.
+> "One click. The root agent plans, then delegates to subgraphs as tools.
 >
-> Top of the board: laksa in sixty seconds. Her best-ever post was laksa.
+> Watch the fan-out — four research specialists run at once and gather. One of
+> them goes out through MCP to retrieve Maya's own past posts. That's the
+> retrieval-augmented bit: her history, not generic food advice.
 >
-> Now watch the right column. These are not chat messages. The agent calls a
-> render tool, and AG-UI mounts a real component — a research brief, then a
-> full content package with hook, script beats, shot list and caption."
+> The right column isn't chat. The agent calls a render tool and AG-UI mounts a
+> real component — a research brief, then a full content package."
 
 ---
 
-## 1:20 — 1:40 · Critique fails, then the rewrite
+## 1:20 — 1:50 · The critique fails, then the rewrite passes
 
-| Cue | What lands |
+| Cue | Trace row |
 |---|---|
-| 1:18 | `HookCriticAgent` · **loop** turns red — status `fail` |
-| 1:20 | **Critique card, iteration 1/3 — FAIL 0.42** |
-| 1:24 | **Content package v2** with the rewritten hook |
-| 1:27 | **Critique card, iteration 2/3 — PASS 0.86** |
+| ~1:22 | `RefinementLoop` · **loop** — "QA until pass or max 3 iterations" |
+| ~1:25 | `FactCheckerAgent` · loop — **fail**: `['cite or remove calories']` |
+| ~1:28 | `VoiceCritiqueAgent` · loop — "pass: voice ok" |
+| ~1:30 | `RefinementLoop` · loop — **"Iteration 1 failed; rewriting"** |
+| ~1:34 | `DraftWriterAgent` · loop — "Rewrite applied" |
+| ~1:38 | `FactCheckerAgent` · loop — "pass: clean" |
+| ~1:41 | `RefinementLoop` · loop — **"Passed on iteration 2"** |
 
-> "And here's the part I actually care about. Three critics review that package.
-> Brand safety passes. Fact-check flags an unverifiable claim. The hook critic
-> fails it outright — score 0.42.
->
-> Look at the reasons: 'Hey guys' is a generic greeting, 'best laksa in
-> Singapore' is unverifiable, and nothing places it in Tiong Bahru. Three
-> must-fix items, structured, not vibes.
->
-> The rewrite agent takes another pass — iteration two of a max of three."
+**Open the two package cards side by side.**
 
-**Point at the v2 hook.**
-
-> "'My neighbours queue forty minutes for this bowl. I'm making it in my HDB
-> kitchen for four dollars.' Concrete, checkable, no superlatives. 0.86, pass.
+> "This is the part I care about. The draft says the bowl is three hundred and
+> twenty calories. Nobody measured that — it's the kind of number a model
+> invents and a creator gets called out for.
 >
-> Nobody approved that. The loop caught its own bad work and fixed it."
+> The fact checker fails it. Not a score — a structured verdict with a must-fix
+> list: cite or remove calories. The loop rewrites, and the new script says 'I
+> don't do mystery calorie claims'. Second iteration passes.
+>
+> Nobody approved that. The loop caught its own bad work and fixed it, and the
+> trace shows both attempts."
 
 ---
 
-## 1:40 — 2:00 · Outreach goes out on its own
+## 1:50 — 2:10 · Outreach and the pipeline
 
-| Cue | What lands |
+| Cue | Trace row |
 |---|---|
-| 1:40 | **Email card — sent**, Laksa Lab, SGD 650 rate card |
-| 1:42 | **DM card — queued** for Wednesday 10:00 |
-| 1:45 | **Call script card** with three objection handles |
-| 1:46 | `SendGateAgent` · custom — "PAUSE_BEFORE_SEND is off. Sent 1 email, queued 1 DM." |
-
-> "Outreach writes itself. A real email to the stall owner with a rate card
-> benchmarked against local micro-creator rates, a DM as the Wednesday nudge,
-> and a call script with objection handles for when she walks in.
->
-> That email is sent. There is a pause-before-send toggle and it is off by
-> default, because supervising an agent shouldn't mean approving every sentence
-> it writes."
-
----
-
-## 2:00 — 2:15 · Pipeline and calendar
+| ~1:52 | `OutreachPipeline` · **sequential** — "Strategy → script → email" |
+| ~1:56 | `OutreachScriptAgent` · sequential — "Call script drafted" |
+| ~2:00 | `PitchEmailAgent` · sequential — "Email + DM drafted" |
+| ~2:04 | `CDRRootAgent` · tool — "persist_and_schedule → MCP/P3" |
 
 **Pan to the centre column.**
 
-> "Everything persisted. The pipeline kanban is the Pipeline Manager's own
-> statuses — new, qualified, packaged, scheduled, outreach sent.
+> "Outreach writes itself — a pitch email to Laksa Lab, a DM, and a thirty-second
+> call script for when she walks in.
 >
-> And the week is booked: three posts on Maya's actual filming days. The slot
-> optimiser moved Thursday from noon to seven, because that's when her audience
-> is awake.
->
-> That's plan and act. Now the part most demos skip."
+> Then everything persists through MCP to the Pipeline Manager: opportunities on
+> the kanban, artifacts in the drawer, and the week booked onto her actual
+> filming days. That's plan and act. Now the part most demos skip."
 
 ---
 
-## 2:15 — 2:45 · Week 2 — what came back changes the plan
+## 2:10 — 2:35 · Week 2 — what came back changes the plan
 
-**Click `Run week 2 (replay)`.**
+**Trigger week 2.**
 
-| Cue | What lands |
-|---|---|
-| 2:24 | **Reply card** — Wei Sheng, Laksa Lab, classified `interested` 0.92 |
-| 2:26 | **Analytics card** — laksa 3.1× median, dessert 0.4× |
-| 2:31 | `MemoryAdaptAgent` · **loop** — "3 entries updated, 1 promoted to a hard rule" |
-| 2:37 | **Plan adapted card** — before → after weights |
-| 2:41 | Calendar replans to the week of Sep 7 |
-| 2:44 | **Counter-offer email — sent** |
-
-> "A week passes. The brand replied — interested, but asks for two posts instead
-> of three, and a weekday morning shoot. Analytics land: the laksa post did
-> three times her median. The dessert test did four tenths.
+> "A week passes. Laksa Lab replied — interested, wants a call. The classifier
+> reads it, moves the opportunity from outreached to engaged, and the kanban
+> card moves on its own.
 >
-> Watch the memory panel. 'Dessert scores minus 0.20 and is no longer proposed'
-> — that was a soft observation last week, it's a hard rule now. And the hook
-> lesson is confirmed: zero rewrite loops this run.
->
-> Then the plan changes by itself. Dessert drops off the board. The Laksa Lab
-> shoot moves to Wednesday morning because the brand asked. And the counter-offer
-> — two posts, SGD 450, third post as an upsell — is already sent."
+> Then the analytics land. The laksa post beat her median several times over.
+> The dessert test did a fraction of it. Watch the memory panel: 'prefer hawker
+> how-tos, deprioritise dessert how-tos' — that is now a stored rule, and it
+> biases next week's plan before anyone asks."
 
 ---
 
-## 2:45 — 3:00 · Closer
+## 2:35 — 3:00 · Same agents, a different creator
 
-> "Plan: it found and scored the week's work.
-> Act: it wrote, critiqued, rewrote, scheduled, and sent.
-> Adapt: what came back rewrote next week's plan without anyone asking.
+**Sign out. Sign in as `henry@creatorloop.local`. Click `Run campaign`.**
+
+> "And none of that is hardcoded to Maya. Same thirty-five agents, same graph —
+> a different account.
 >
-> Thirty-nine named agents, six patterns, MCP tools, AG-UI components, OTEL
-> spans — and one button. That's CreatorLoop."
+> Henry opens Pokémon cards. Different opportunities, a different brand target,
+> and watch the critique: it fails him for quoting a pull rate the manufacturer
+> never published. His own failure mode, not hers.
+>
+> Plan, act, adapt — for whoever signs up. That's CreatorLoop."
 
 ---
 
 ## If something breaks mid-record
 
-- **Board empty after clicking Run** — the server isn't up. `python3 ui_client/server.py`, reload.
-- **Live mode and P2 is down** — the trace shows `RunSupervisor` saying it fell back to
-  fixtures, and the story still runs. Don't stop recording.
-- **Run too fast to narrate** — raise `DEMO_SPEED` above 1.0 to speed up, lower it to slow down.
-  0.6 is the setting these cues are measured at; 0.45 gives you a slower, 90-second week 1.
+- **Board empty / bounced to sign-in** — session expired. Sign in again.
+- **Run finishes instantly** — `DEMO_SPEED` isn't set. Restart with
+  `DEMO_SPEED=8 ./scripts/run_local.sh`.
+- **Critique doesn't fail** — `USE_FIXTURES=0`. The scripted beats only fire on
+  fixtures; set it to `1` in `.env` and restart.
+- **Trace shows "Could not reach the CDR agent"** — the CDR on :8084 is down.
+  The board says so rather than hanging; restart the stack.
+- **Wrong persona's data** — you're still signed in as someone else. The profile
+  chip in the campaign bar tells you who.
+
+## Verify before recording
+
+```bash
+curl -s localhost:8084/health     # runtime.runtime should read "fixtures"
+python scripts/uat_smoke.py       # 22 checks across all six services
+pytest -q                         # 58 tests
+```

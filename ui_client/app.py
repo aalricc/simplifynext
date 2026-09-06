@@ -17,6 +17,7 @@ human is authenticated. See shared/tenant.py for why it is signed.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import uuid
@@ -43,6 +44,15 @@ STATIC = Path(__file__).resolve().parent / "static"
 CDR_AGUI_URL = os.getenv("CDR_AGUI_URL", "http://localhost:8084/ag-ui")
 LIVE_TIMEOUT = float(os.getenv("LIVE_TIMEOUT", "300"))
 SECURE_COOKIES = os.getenv("CREATORLOOP_ENV", "dev") == "production"
+
+# Seconds to hold each AG-UI frame before forwarding it. Demo pacing for the
+# recorded video: a fixture campaign emits ~141 frames in about a second, which
+# nobody can narrate. DEMO_SPEED is frames per second; unset means no delay and
+# the stream runs as fast as the agents produce it.
+#   DEMO_SPEED=8   -> ~18s campaign, comfortable narration
+#   DEMO_SPEED=15  -> ~10s campaign
+_DEMO_SPEED = float(os.getenv("DEMO_SPEED", "0") or 0)
+FRAME_DELAY = (1.0 / _DEMO_SPEED) if _DEMO_SPEED > 0 else 0.0
 
 app = FastAPI(title="CreatorLoop UI", version="1.0.0")
 # tenant=False: this service resolves the tenant from the session cookie, not
@@ -415,6 +425,13 @@ async def ag_ui(request: Request, profile: CreatorProfile = Depends(active_profi
                         return
                     async for line in upstream.aiter_lines():
                         if line.startswith("data:"):
+                            if FRAME_DELAY:
+                                # Demo pacing only. A fixture campaign finishes in
+                                # about a second, which is unnarratable on video.
+                                # This slows delivery to the browser; it does not
+                                # slow the agents, and it is off unless DEMO_SPEED
+                                # is set.
+                                await asyncio.sleep(FRAME_DELAY)
                             yield f"{line}\n\n"
         except (httpx.HTTPError, OSError) as exc:
             # Say so on the board rather than leaving it spinning on a dead

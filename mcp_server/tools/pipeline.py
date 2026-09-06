@@ -14,7 +14,7 @@ from typing import Any
 
 import httpx
 
-from mcp.tools import tool
+from mcp_server.tools import tool
 from shared.http_clients import PIPELINE_MANAGER_URL, client
 from shared.rag import rank
 

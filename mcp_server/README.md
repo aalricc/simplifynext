@@ -22,7 +22,7 @@ so no merge conflicts. `server.py` only dispatches.
 ## Adding a tool
 
 ```python
-from mcp.tools import tool
+from mcp_server.tools import tool
 
 @tool("my_tool", owner="P3", description="What it does")
 async def my_tool(thing: str, limit: int = 5) -> dict:

@@ -269,7 +269,13 @@ Three rules that keep this honest:
 
 `pytest tests/test_tenancy.py` is the guard on all of this.
 
-About **34 distinct named agents** (llm, sequential, parallel, loop, tool, custom). Do not collapse them into one mega-prompt. The list per service lives in each service's `agents/` folder; **39** appear by name across the two demo runs.
+**35 distinct named agents** across the four services, each appearing by name on the live trace with its pattern badge. Do not collapse them into one mega-prompt. The list per service lives in each service's `agents/` folder, and the count is checkable:
+
+```bash
+grep -rho 'name = "[A-Za-z]*"' */agents/*.py | sort -u | wc -l   # 35
+```
+
+Badge mix: 26 `llm`, 5 `sequential`, 2 `custom`, 1 `parallel` (`ParallelResearch`), 1 `loop` (`RefinementLoop`). See [`STACK.md`](STACK.md).
 
 ### Patterns that must show up in the demo
 

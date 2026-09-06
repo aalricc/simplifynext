@@ -6,31 +6,39 @@ screen, it does not count.
 
 | Kick-off item | Where it lives | Visible in the demo as |
 |---|---|---|
-| **MCP** | MCP tool server (8085); called by Finder, CDR and Pipeline | "MCP tool calls" panel, bottom left — `search`, `places`, `rag_retrieve`, `persist_and_schedule`, `inbox` with their arguments |
+| **MCP** | MCP tool server in `mcp_server/` (8085); called by Finder, CDR and Pipeline | "MCP tool calls" panel, bottom left — `search`, `places`, `rag_retrieve`, `persist_and_schedule`, `inbox` with their arguments |
 | **AG-UI** | `ui_client/agui/` (CopilotKit) + `POST /ag-ui` on 8084 | The artifact drawer. Agent tool calls mount real components — research brief, content package, critique card, email, calendar — not chat text |
 | **OpenTelemetry** | Spans named `{agent}.{pattern}` on every agent | The live agent trace. Each row is a span: agent name, pattern badge, service, summary |
-| **LangGraph** | P2's graphs in the CDR service | Sequential and loop badges — `ResearchPlannerAgent`, the `HookCriticAgent` → `RewriteAgent` loop |
+| **LangGraph** | P2's graphs in the CDR service | Sequential and loop badges — `ResearchThenPropose`, and the `RefinementLoop` that fails a draft then passes the rewrite |
 | **DeepAgents** | `CDRRootAgent`, the root planner — DeepAgents-*style* (plan → delegate to subgraphs as tools), hand-written on LangGraph, not the `deepagents` package | First line of every run: "DeepAgents root … delegating to finder, research, package, outreach subgraphs" |
-| **Claude Agent SDK** | Optional specialist critic | `FactCheckCriticAgent` (pattern `tool`) |
+| **Claude Agent SDK** | Optional specialist critic in `harness/claude_agent.py` | `FactCheckerAgent`, when `ANTHROPIC_API_KEY` is set. `GET :8084/health` reports `claude_agent_sdk.available` so a dead integration is visible before a demo, not during one |
 | **AWS Bedrock AgentCore** | Deploy target for the recorded demo | Not on screen — deployment target, called out verbally |
-| **Groq** | Local inference for the `llm`-pattern agents | Green `llm` badges: `HookWriterAgent`, `ScriptWriterAgent`, `EmailDraftAgent`, `ReplyClassifierAgent` |
+| **Groq** | Local inference for the `llm`-pattern agents | Green `llm` badges: `DraftWriterAgent`, `ProposalGenerationAgent`, `PitchEmailAgent`, `ReplyClassifierAgent` |
 
 ## Agent patterns on screen
 
 The trace badges the pattern for every agent, because "which pattern is this"
 is the question judges actually ask.
 
-| Badge | Meaning | Example in the demo |
-|---|---|---|
-| `parallel` | Fan-out / gather | `FinderFanoutAgent` starts 4 scouts at 0:52 |
-| `sequential` | Ordered pipeline | `ResearchPlannerAgent` → `ResearchSynthAgent` |
-| `loop` | Iterative refinement, max 3 | `HookCriticAgent` fails → `RewriteAgent` → passes |
-| `tool` | Agent-as-tool / MCP call | `LocalPlacesAgent`, `RAGRetrieverAgent` |
-| `custom` | Hand-written control flow | `OpportunityDedupeAgent`, `SendGateAgent` |
-| `llm` | Single model call | `HookWriterAgent`, `CaptionAgent` |
+| Badge | Meaning | Count | Example |
+|---|---|---|---|
+| `llm` | Single model call | 26 | `DraftWriterAgent`, `FactCheckerAgent`, `PitchEmailAgent` |
+| `sequential` | Ordered pipeline | 5 | `ResearchThenPropose`, `OutreachPipeline`, `PersistAndSchedule` |
+| `custom` | Hand-written control flow | 2 | `CDRRootAgent`, `OpportunityFinderRoot` |
+| `parallel` | Fan-out / gather | 1 | `ParallelResearch` — four research specialists at once |
+| `loop` | Iterative refinement, max 3 | 1 | `RefinementLoop` — fact + voice critique, rewrite, re-check |
 
-Across the two runs, **39 distinct named agents** appear on screen: 13 parallel,
-12 llm, 7 tool, 6 sequential, 6 loop, 5 custom steps.
+**35 distinct named agents** are defined across the four services and appear on
+the trace by name. Verify the count yourself:
+
+```bash
+grep -rho 'name = "[A-Za-z]*"' */agents/*.py | sort -u | wc -l
+```
+
+Most carry the `llm` badge because most are a single prompted step. The
+patterns that matter for the brief — parallel fan-out, and a refinement loop
+that visibly fails then passes — are `ParallelResearch` and `RefinementLoop`,
+both of which run in every campaign.
 
 ## Human-in-the-loop
 

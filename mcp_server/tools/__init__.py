@@ -1,6 +1,6 @@
 """Tool registry for the MCP server.
 
-Tools are plain async functions registered by name. `mcp/server.py` is a thin
+Tools are plain async functions registered by name. `mcp_server/server.py` is a thin
 dispatcher over this registry, so:
 
   * P1 edits `search.py`, P3 edits `pipeline.py` -- no shared file, no conflicts
@@ -109,4 +109,4 @@ async def dispatch(name: str, arguments: dict[str, Any] | None = None) -> Any:
 
 
 # Import tool modules so their decorators run. Keep at the bottom.
-from mcp.tools import pipeline, search  # noqa: E402,F401
+from mcp_server.tools import pipeline, search  # noqa: E402,F401
