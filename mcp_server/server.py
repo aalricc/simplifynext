@@ -1,9 +1,9 @@
 """MCP tool server (kick-off stack: Model Context Protocol).
 
-Thin dispatcher over the registry in `mcp/tools/`. Tool implementations live in:
+Thin dispatcher over the registry in `mcp_server/tools/`. Tool implementations live in:
 
-  * `mcp/tools/search.py`   -- P1: search_web, search_local_places, fetch_url, find_opportunities
-  * `mcp/tools/pipeline.py` -- P3: persist, calendar, inbox, memory, CRUD, email
+  * `mcp_server/tools/search.py`   -- P1: search_web, search_local_places, fetch_url, find_opportunities
+  * `mcp_server/tools/pipeline.py` -- P3: persist, calendar, inbox, memory, CRUD, email
 
 Agents call these through `shared/mcp_client.py`, never with ad-hoc HTTP.
 
@@ -17,7 +17,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
-from mcp.tools import ToolError, dispatch, list_specs
+from mcp_server.tools import ToolError, dispatch, list_specs
 from shared.cors import add_cors
 from shared.flags import use_fixtures
 

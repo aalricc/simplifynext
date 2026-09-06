@@ -57,11 +57,15 @@ def runtime_payload() -> dict[str, Any]:
     if use_fixtures():
         runtime = "fixtures"
     elif not available():
-        runtime = "fixtures"  # complete_json falls back rather than failing
+        # NOT "fixtures". complete_json used to fall back to canned output here,
+        # which meant a broken key silently served one persona's demo content as
+        # another creator's results. It now raises, so a run in this state fails
+        # visibly -- and /health has to say that rather than look healthy.
+        runtime = "unavailable"
     else:
         runtime = "bedrock" if selected == "bedrock" else "local-groq"
 
-    return {
+    payload = {
         "runtime": runtime,
         "provider": selected,
         "model_id": BEDROCK_MODEL if selected == "bedrock" else os.getenv("GROQ_MODEL"),
@@ -70,3 +74,18 @@ def runtime_payload() -> dict[str, Any]:
         "memory_id": get_memory_id(),
         "agentcore_memory": "not_implemented",
     }
+
+    if selected == "bedrock":
+        # Sandbox credentials are temporary and expire every 12 hours. Missing
+        # the session token signs a request that fails at call time, which is a
+        # miserable thing to discover mid-demo.
+        from shared.llm import _env
+
+        payload["session_token"] = "present" if _env("AWS_SESSION_TOKEN") else "absent"
+        if payload["session_token"] == "absent" and not _env("AWS_PROFILE"):
+            payload["warning"] = (
+                "AWS_SESSION_TOKEN is not set. Temporary sandbox credentials "
+                "require it; only permanent IAM keys work without one."
+            )
+
+    return payload

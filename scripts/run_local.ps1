@@ -32,7 +32,7 @@ Write-Host "applying migrations..."
 & $py -m alembic upgrade head
 
 $jobs = @()
-$jobs += Start-Process -PassThru -NoNewWindow $py -ArgumentList "-m","uvicorn","mcp.server:app","--port","8085"
+$jobs += Start-Process -PassThru -NoNewWindow $py -ArgumentList "-m","uvicorn","mcp_server.server:app","--port","8085"
 $jobs += Start-Process -PassThru -NoNewWindow $py -ArgumentList "-m","uvicorn","opportunity_finder.app:app","--port","8081"
 $jobs += Start-Process -PassThru -NoNewWindow $py -ArgumentList "-m","uvicorn","pipeline_manager.app:app","--port","8082"
 $jobs += Start-Process -PassThru -NoNewWindow $py -ArgumentList "-m","uvicorn","engagement_listener.app:app","--port","8083"

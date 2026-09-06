@@ -19,7 +19,7 @@ from typing import Any
 
 import httpx
 
-from mcp.tools import tool
+from mcp_server.tools import tool
 from shared.fixtures import persona_dir, persona_file
 from shared.flags import use_fixtures
 from shared.tenant import current_profile

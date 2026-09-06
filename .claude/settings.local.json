@@ -92,7 +92,13 @@
       "Bash(curl -s -X POST localhost:8084/ag-ui -H 'Content-Type: application/json' -H 'X-CreatorLoop-Profile: __TRACKED_VAR__' -H 'X-CreatorLoop-Token: __TRACKED_VAR__' -d '{\"runId\":\"diag1\",\"profile_id\":\"__TRACKED_VAR__\"}' -m 60)",
       "Bash(timeout 70 curl -s -X POST localhost:8084/ag-ui -H 'Content-Type: application/json' -H 'X-CreatorLoop-Profile: __TRACKED_VAR__' -H 'X-CreatorLoop-Token: __TRACKED_VAR__' -d '{\"runId\":\"diag9\",\"profile_id\":\"__TRACKED_VAR__\"}')",
       "Bash(cd /Users/dylanheng/Documents/GitHub/simplifynext *)",
-      "Bash(.venv/bin/python -m pytest tests/ -q)"
+      "Bash(.venv/bin/python -m pytest tests/ -q)",
+      "Bash(.venv/bin/python -c \"import mcp; print\\('mcp resolves to:', mcp.__file__\\)\")",
+      "Bash(/Users/dylanheng/Documents/GitHub/simplifynext/.venv/bin/python -c ' *)",
+      "Bash(sed 's/=\\\\\\(.\\\\{4\\\\}\\\\\\).*/=\\\\1…/')",
+      "Bash(sed -n '/^def _env/,/^def provider/p' shared/llm.py)",
+      "Bash(chmod +x scripts/check_bedrock.py)",
+      "Bash(.venv/bin/python scripts/check_bedrock.py)"
     ],
     "additionalDirectories": [
       "/tmp/creatorloop-design",

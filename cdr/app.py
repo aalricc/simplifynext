@@ -12,6 +12,7 @@ from cdr.agui import router as agui_router
 from cdr.runtime import as_run_state, cancel, get_run, queue
 from cdr.service import ProfileMissing, execute_run, start_run
 from harness.agentcore import runtime_payload
+from harness.claude_agent import sdk_status
 from shared.cors import add_cors
 from shared.db import dispose, healthcheck
 
@@ -34,6 +35,8 @@ async def health() -> dict:
         "service": "cdr",
         "status": "ok",
         "runtime": runtime_payload(),
+        # Surfaces a dead Claude Agent SDK before a demo rather than during one.
+        "claude_agent_sdk": sdk_status(),
         **(await healthcheck()),
     }
 
