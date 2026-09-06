@@ -1,0 +1,70 @@
+{
+  "_note": "John's seeded opportunities. source_agent decides which harvest agent claims each row in fixture mode.",
+  "opportunities": [
+    {
+      "id": "opp-john-flaw-first-flip",
+      "type": "trend",
+      "title": "Flaw-first flip: SGD 6 jacket, shown stained, then styled",
+      "why_now": "Comment sentiment is turning against hauls that hide condition; flaw-first framing is being rewarded.",
+      "city": "Singapore",
+      "niche": "thrift flipping and secondhand styling",
+      "score": 93,
+      "evidence_urls": ["https://example.local/trend/flaw-first"],
+      "raw_notes": "Highest save intent. Audience wants the honest condition shot.",
+      "source_agent": "TrendHarvesterAgent",
+      "status": "new"
+    },
+    {
+      "id": "opp-john-rail-restock",
+      "type": "trend",
+      "title": "Rail restock in real time — what sold and what didn't",
+      "why_now": "Restock formats are peaking as resale apps push local drops.",
+      "city": "Singapore",
+      "niche": "thrift flipping and secondhand styling",
+      "score": 85,
+      "evidence_urls": ["https://example.local/trend/restock-drops"],
+      "raw_notes": "Repeatable weekly format. Solves the blank-page problem.",
+      "source_agent": "TrendHarvesterAgent",
+      "status": "new"
+    },
+    {
+      "id": "opp-john-brand-gap-loop",
+      "type": "gap",
+      "title": "Loop Vintage has the best rail on Haji Lane and no video",
+      "why_now": "Strong curation, Instagram is stills only. John can own their fitting-room content.",
+      "city": "Singapore",
+      "niche": "thrift flipping and secondhand styling",
+      "score": 91,
+      "evidence_urls": ["https://example.local/brand/loop-vintage"],
+      "raw_notes": "Brand-gap: real product, no creator content. Highest-fit partner.",
+      "source_agent": "BrandGapAgent",
+      "status": "new"
+    },
+    {
+      "id": "opp-john-collab-refresh",
+      "type": "collab",
+      "title": "Can Refresh Laundry save a SGD 4 stained shirt?",
+      "why_now": "Garment-care service with no content; John already gets asked how he cleans finds.",
+      "city": "Singapore",
+      "niche": "thrift flipping and secondhand styling",
+      "score": 76,
+      "evidence_urls": ["https://example.local/brand/refresh-laundry"],
+      "raw_notes": "Collab. Answers the single most common comment on his hauls.",
+      "source_agent": "CollabScoutAgent",
+      "status": "new"
+    },
+    {
+      "id": "opp-john-wardrobe-organise",
+      "type": "gap",
+      "title": "Wardrobe organisation series",
+      "why_now": "Broad search volume but John's own organisation content flops.",
+      "city": "Singapore",
+      "niche": "thrift flipping and secondhand styling",
+      "score": 38,
+      "evidence_urls": [],
+      "raw_notes": "Weak fit. Kept so the scorer has something to rank last.",
+      "source_agent": "BrandGapAgent",
+      "status": "new"
+    }
+  ]
+}

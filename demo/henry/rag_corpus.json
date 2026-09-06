@@ -1,0 +1,76 @@
+{
+  "corpus_id": "henry_v1",
+  "description": "Retrievable notes about Henry's past openings, audience and the local card-shop landscape. Served per creator via the MCP retrieve_creator_memory tool.",
+  "documents": [
+    {
+      "id": "post_001",
+      "type": "past_post",
+      "title": "SGD 200 vintage box — I lost money and said so",
+      "posted": "2026-06-11",
+      "platform": "tiktok",
+      "views": 41200,
+      "saves": 2100,
+      "notes": "Best performer to date. Showing the loss beat every hype video he has made. Comments repeatedly asked which shop he bought from."
+    },
+    {
+      "id": "post_002",
+      "type": "past_post",
+      "title": "Charizard grading reveal — 9 or 10?",
+      "posted": "2026-06-25",
+      "platform": "youtube",
+      "views": 22800,
+      "saves": 980,
+      "notes": "Strong. The pause before the reveal held retention to 64%. Audience asked for a full submission walkthrough."
+    },
+    {
+      "id": "post_003",
+      "type": "past_post",
+      "title": "Beginner deck building part 1",
+      "posted": "2026-07-02",
+      "platform": "youtube",
+      "views": 3100,
+      "saves": 40,
+      "notes": "Weak. Watch time collapsed at 40 seconds. Parts 2 and 3 were never filmed."
+    },
+    {
+      "id": "post_004",
+      "type": "past_post",
+      "title": "Price checking my binder live",
+      "posted": "2026-07-16",
+      "platform": "tiktok",
+      "views": 18600,
+      "saves": 760,
+      "notes": "Good. Reaction to a card being worth less than expected drove the comment section."
+    },
+    {
+      "id": "audience_001",
+      "type": "audience_note",
+      "title": "Who actually watches",
+      "notes": "18–30, mostly SG and MY, deciding whether to spend on sealed product. They save 'is it worth it' verdicts and skip pure hype. Strong distrust of creators who quote pull rates."
+    },
+    {
+      "id": "audience_002",
+      "type": "audience_note",
+      "title": "Comment patterns",
+      "notes": "Two recurring asks: 'which shop' and 'what would you have paid'. Both are unanswered content slots."
+    },
+    {
+      "id": "brand_001",
+      "type": "brand_note",
+      "title": "Orchard Card Bar",
+      "notes": "Weekend queue, active Instagram of static shelf photos, no video. Owner has replied to comments before. Highest-fit sponsor target."
+    },
+    {
+      "id": "brand_002",
+      "type": "brand_note",
+      "title": "GradeHouse Asia",
+      "notes": "New grading service. Needs trust-building content more than reach. Would suit an educational walkthrough rather than a sponsored break."
+    },
+    {
+      "id": "constraint_001",
+      "type": "constraint",
+      "title": "What Henry will not do",
+      "notes": "No made-up pull rates, no fake reaction edits, no 'guaranteed hit' language, no loot-box giveaways aimed at under-18s. Budget is SGD 120 a week and he films Wed/Fri/Sun."
+    }
+  ]
+}

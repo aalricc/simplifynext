@@ -90,11 +90,14 @@
       "Bash(export DATABASE_URL=\"sqlite+aiosqlite:////tmp/smoke.db\")",
       "Bash(.venv/bin/python -c 'from shared.tenant import mint_token; print\\(mint_token\\('\\\\''__TRACKED_VAR__'\\\\''\\)\\)')",
       "Bash(curl -s -X POST localhost:8084/ag-ui -H 'Content-Type: application/json' -H 'X-CreatorLoop-Profile: __TRACKED_VAR__' -H 'X-CreatorLoop-Token: __TRACKED_VAR__' -d '{\"runId\":\"diag1\",\"profile_id\":\"__TRACKED_VAR__\"}' -m 60)",
-      "Bash(timeout 70 curl -s -X POST localhost:8084/ag-ui -H 'Content-Type: application/json' -H 'X-CreatorLoop-Profile: __TRACKED_VAR__' -H 'X-CreatorLoop-Token: __TRACKED_VAR__' -d '{\"runId\":\"diag9\",\"profile_id\":\"__TRACKED_VAR__\"}')"
+      "Bash(timeout 70 curl -s -X POST localhost:8084/ag-ui -H 'Content-Type: application/json' -H 'X-CreatorLoop-Profile: __TRACKED_VAR__' -H 'X-CreatorLoop-Token: __TRACKED_VAR__' -d '{\"runId\":\"diag9\",\"profile_id\":\"__TRACKED_VAR__\"}')",
+      "Bash(cd /Users/dylanheng/Documents/GitHub/simplifynext *)",
+      "Bash(.venv/bin/python -m pytest tests/ -q)"
     ],
     "additionalDirectories": [
       "/tmp/creatorloop-design",
-      "/private/tmp/creatorloop-design"
+      "/private/tmp/creatorloop-design",
+      "/tmp"
     ]
   }
 }

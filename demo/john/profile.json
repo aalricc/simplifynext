@@ -1,0 +1,42 @@
+{
+  "profile_id": "john",
+  "name": "John Tan",
+  "handle": "@johnthrifts",
+  "demo_niche_keywords": ["thrift", "clothes", "clothing", "fashion", "resell", "vintage", "secondhand"],
+  "city": "Singapore",
+  "niche": "thrift flipping and secondhand styling",
+  "platforms": ["instagram", "tiktok"],
+  "followers": { "instagram": 9600, "tiktok": 6200 },
+  "median_views": 6400,
+  "posting_cadence_actual": "1-2 per week, whenever a good haul lands",
+  "posting_cadence_goal": "3 per week, same 3 slots",
+  "goals": [
+    "3 posts per week on a repeatable schedule",
+    "first paid partnership with a local vintage store",
+    "sell through the rail before buying more stock"
+  ],
+  "pain": "Sourcing is unpredictable, so filming is unpredictable. Pieces sit unlisted for weeks, and the styling ideas that actually sell them never get made because the week starts from nothing.",
+  "voice": {
+    "tone": "dry, practical, a bit self-deprecating about his own misses",
+    "language": "English with Singlish seasoning (chope, damn shiok, jialat) - never forced",
+    "signature": "films on the rail in his bedroom, always shows the flaw before the fit, prices on screen",
+    "avoid": [
+      "invented resale valuations",
+      "fast-fashion haul energy",
+      "'you can flip this for 10x' claims",
+      "pretending a piece is rarer than it is"
+    ]
+  },
+  "constraints": {
+    "filming_days": ["mon", "thu", "sat"],
+    "budget_sgd_per_week": 80,
+    "no_go": ["fast fashion sponsorships", "dropshipped replicas", "crypto"]
+  },
+  "brand_targets": [
+    { "name": "Loop Vintage", "area": "Haji Lane", "why": "strong rail, Instagram is stills only" },
+    { "name": "Refresh Laundry Co", "area": "Tiong Bahru", "why": "garment care service, zero creator content" },
+    { "name": "Second Round SG", "area": "online", "why": "resale marketplace, no local creator partnerships" }
+  ],
+  "best_performing": ["thrift flips", "before and after styling", "rail restocks", "flaw-first hauls"],
+  "worst_performing": ["general outfit inspo", "brand new fast fashion", "wardrobe organisation"]
+}

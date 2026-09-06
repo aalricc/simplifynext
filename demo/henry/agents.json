@@ -1,0 +1,164 @@
+{
+  "_note": "Henry's canned agent output. The critique beat: ProposalGenerationAgent writes an unsourced pull rate, FactCheckerAgent fails it, DraftWriterAgent rewrites without it and passes.",
+
+  "NicheQueryAgent": {
+    "queries": [
+      "base set repack worth it Singapore",
+      "pokemon repack scam carousell",
+      "grading turnaround time asia 2026",
+      "psa vs gradehouse submission cost",
+      "card shop Singapore short form video",
+      "sleeve brand pokemon creator sponsorship",
+      "vintage pack opening retention tiktok",
+      "pokemon deck tutorial views drop"
+    ]
+  },
+  "TrendHarvesterAgent": { "_seed": "TrendHarvesterAgent" },
+  "BrandGapAgent": { "_seed": "BrandGapAgent" },
+  "CollabScoutAgent": { "_seed": "CollabScoutAgent" },
+  "OpportunityClusterAgent": {
+    "clusters": [
+      { "theme": "vintage / repack honesty", "ids": ["opp-henry-vintage-repack", "opp-henry-brand-gap-orchard"] },
+      { "theme": "grading content", "ids": ["opp-henry-grading-reveal", "opp-henry-collab-gradehouse"] },
+      { "theme": "deck content (weak)", "ids": ["opp-henry-deck-tech"] }
+    ]
+  },
+  "OpportunityScorerAgent": { "_seed": "*" },
+  "OpportunityFinderRoot": { "ok": true },
+
+  "OpportunityClerkAgent": { "ok": true, "action": "upsert" },
+  "QualificationAgent": {
+    "_rules": [
+      { "if_any": ["orchard", "opp-henry-brand-gap-orchard", "90"], "then": { "label": "hot", "reason": "Brand-gap with a real shop floor and no video." } },
+      { "if_any": ["deck", "opp-henry-deck-tech"], "then": { "label": "cold", "reason": "Deck tutorials underperform badly on Henry's channel." } },
+      { "if_any": ["repack", "92", "opp-henry-vintage-repack"], "then": { "label": "hot", "reason": "Top trend and Henry's best-retaining format." } }
+    ],
+    "_default": { "label": "warm", "reason": "Solid fit for a pulls-first channel." }
+  },
+  "FollowUpPlannerAgent": {
+    "actions": [
+      { "when": "+2d", "channel": "email", "note": "If Orchard Card Bar is silent, nudge with the repack verdict clip attached." }
+    ],
+    "meeting_ask": true
+  },
+  "CalendarAssistantAgent": {
+    "slots": [
+      { "kind": "post", "weekday": "Wed", "time": "20:00", "title": "SGD 80 Base Set repack — honest verdict" },
+      { "kind": "post", "weekday": "Fri", "time": "20:00", "title": "12 grading submissions, live reveal" },
+      { "kind": "post", "weekday": "Sun", "time": "15:00", "title": "Orchard Card Bar break — what I'd actually buy" },
+      { "kind": "followup", "weekday": "Thu", "time": "10:00", "title": "Follow up Orchard Card Bar" }
+    ]
+  },
+  "StatusTrackerAgent": {
+    "_rules": [
+      { "if_any": ["engaged", "interested"], "then": { "ok": true, "status": "engaged" } },
+      { "if_any": ["meeting"], "then": { "ok": true, "status": "meeting" } },
+      { "if_any": ["lost"], "then": { "ok": true, "status": "lost" } },
+      { "if_any": ["packaged"], "then": { "ok": true, "status": "packaged" } },
+      { "if_any": ["researched"], "then": { "ok": true, "status": "researched" } }
+    ],
+    "_default": { "ok": true, "status": "outreached" }
+  },
+
+  "EngagementIngestAgent": { "ok": true, "normalized": true },
+  "ReplyClassifierAgent": {
+    "_rules": [
+      { "if_any": ["interested", "sponsor", "break", "call", "keen", "loved"], "then": { "label": "interested", "opportunity_id": "opp-henry-brand-gap-orchard", "next_status": "engaged" } },
+      { "if_any": ["unsubscribe", "not interested"], "then": { "label": "not_interested", "opportunity_id": "{oid}", "next_status": "lost" } },
+      { "if_any": ["meeting", "calendar"], "then": { "label": "meeting", "opportunity_id": "{oid}", "next_status": "meeting" } }
+    ],
+    "_default": { "label": "noise", "opportunity_id": null, "next_status": null }
+  },
+  "PerformanceAdaptAgent": {
+    "wins": ["Pull and grading reveals (repack verdict) win on saves and watch time."],
+    "losses": ["Deck-building tutorials drop off hard; lowest watch time of the week."],
+    "next_bias": [
+      "Prefer pulls, grading reveals and honest price verdicts.",
+      "Deprioritize deck tutorials and meta breakdowns.",
+      "Keep Orchard Card Bar brand-gap hot."
+    ]
+  },
+
+  "ResearchLeadAgent": {
+    "plan": ["audience", "peers", "presence", "pain"],
+    "why": "Henry's saves cluster on 'is it worth it' verdicts, not hype."
+  },
+  "AudienceResearchAgent": {
+    "audience_insight": "Collectors 18–30 in SG who are deciding whether to spend. They save verdict videos and skip hype. High comment intent on 'what would you have paid'."
+  },
+  "PeerCreatorAnalysisAgent": {
+    "peer_moves": "Peer openers over-index on fake-reaction thumbnails and never show the loss. Gap: honest verdicts, including the bad ones."
+  },
+  "PlatformPresenceAgent": {
+    "platform_presence": "Orchard Card Bar has a queue out the door on weekends and an Instagram of static shelf photos. No video at all. Henry can own their break content."
+  },
+  "PainPointAgent": {
+    "pain_points": "Spend without a plan, fear of promoting a bad repack, and made-up pull rates that get creators called out in comments."
+  },
+
+  "ProposalGenerationAgent": {
+    "opportunity_id": "{oid}",
+    "week_plan": [
+      { "hook": "I paid SGD 80 for a Base Set repack so you don't have to", "format": "one-take open + verdict", "platform": "tiktok", "posting_slot": "Wed 20:00 SGT" },
+      { "hook": "12 grading submissions back — live reveal", "format": "reveal cuts", "platform": "youtube", "posting_slot": "Fri 20:00 SGT" },
+      { "hook": "Orchard Card Bar break — what I'd actually buy", "format": "in-store + open", "platform": "tiktok", "posting_slot": "Sun 15:00 SGT" }
+    ],
+    "hero_script": "Eighty dollars, one repack, no re-films. I'm Henry. Roughly 1 in 4 of these packs has a chase card, so the maths says I'm fine. Folding table, one hand cam, and whatever comes out comes out. Tell me what you'd have paid before I show you the last card.",
+    "captions": {
+      "tiktok": "SGD 80 repack. Honest verdict, no re-films. #pokemontcg #sgcollectors",
+      "youtube": "Base Set repack for SGD 80 — is it worth it? One take, full verdict."
+    },
+    "cta": "Save this before you buy a repack. Shops: happy to film an honest break.",
+    "sources": []
+  },
+  "DraftWriterAgent": {
+    "hero_script": "Eighty dollars, one repack, no re-films. I'm Henry. I'm not going to quote you a pull rate I can't prove — the seller doesn't publish one. Folding table, one hand cam, and whatever comes out comes out. Tell me what you'd have paid before I show you the last card.",
+    "captions": {
+      "tiktok": "SGD 80 repack. Honest verdict, no invented odds. #pokemontcg #sgcollectors",
+      "youtube": "Base Set repack for SGD 80 — one take, full verdict, no made-up pull rates."
+    },
+    "cta": "Save this before you buy a repack. Orchard Card Bar — happy to film an honest in-store break.",
+    "sources": ["Henry's own purchase receipt", "Seller listing (no published odds)"]
+  },
+  "FactCheckerAgent": {
+    "_rules": [
+      { "if_any": ["1 in 4", "1-in-4"], "then": { "verdict": "fail", "issues": ["Unsourced pull-rate claim (1 in 4 packs)."], "must_fix": ["cite the odds or remove the claim"] } },
+      { "if_any": ["pull rate", "odds", "guaranteed"], "if_none": ["can't prove", "cannot prove", "no published odds"], "then": { "verdict": "fail", "issues": ["Pull-rate claim with no published source."], "must_fix": ["cite the odds or remove the claim"] } }
+    ],
+    "_default": { "verdict": "pass", "issues": [], "must_fix": [] }
+  },
+  "VoiceCritiqueAgent": {
+    "_rules": [
+      { "if_all": ["henry"], "if_any": ["repack", "base set", "folding table", "one take", "grading"], "then": { "verdict": "pass", "issues": [], "must_fix": [] } }
+    ],
+    "_default": { "verdict": "fail", "issues": ["Voice missing Henry's named format / no-re-films promise."], "must_fix": ["name the set or the one-take rule"] }
+  },
+
+  "OutreachStrategyAgent": {
+    "channel_order": ["email", "dm", "call_script"],
+    "angle": "Henry fills Orchard Card Bar's missing short-form with honest in-store breaks.",
+    "to": "hello@orchardcardbar.sg"
+  },
+  "OutreachScriptAgent": {
+    "channel": "call_script",
+    "to": "Orchard Card Bar",
+    "subject": "",
+    "body": "30s: Hi, I'm Henry — Pokémon openings on TikTok, Singapore. You have a queue on weekends and no video at all. I film honest breaks, including the bad ones. Three in-store posts next month?"
+  },
+  "PitchEmailAgent": {
+    "channel": "email",
+    "to": "hello@orchardcardbar.sg",
+    "subject": "Henry x Orchard Card Bar — 3 honest in-store breaks",
+    "body": "Hi Orchard Card Bar,\n\nI'm Henry Lim. I open Pokémon product for collectors in Singapore who are deciding whether to spend — verdicts, not hype, and I never re-film a pull.\n\nYour shop floor is busy every weekend and there is no video anywhere. I'd like a 3-post trial filmed in-store: a repack verdict, a graded-card reveal, and an honest 'what I'd actually buy off your shelf'. No invented pull rates, no guaranteed-hit language.\n\n15 min call this week?\nHenry"
+  },
+  "CDRRootAgent": {
+    "plan": [
+      "select top opportunities",
+      "research in parallel",
+      "package + critique loop",
+      "outreach",
+      "persist_and_schedule"
+    ],
+    "selected_ids": ["opp-henry-vintage-repack", "opp-henry-brand-gap-orchard"]
+  }
+}

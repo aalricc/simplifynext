@@ -1,0 +1,13 @@
+{
+  "items": [
+    {
+      "id": "mail-001",
+      "source": "email",
+      "opportunity_id": "opp-henry-brand-gap-orchard",
+      "from": "jo@orchardcardbar.sg",
+      "subject": "Re: Henry x Orchard Card Bar — 3 honest in-store breaks",
+      "body": "Hi Henry, we watched the SGD 200 box video — the fact you showed the loss is exactly why we're keen. We'd do a 3-post trial in-store next month. Can we hop on a 15-min call?",
+      "label_hint": "interested"
+    }
+  ]
+}

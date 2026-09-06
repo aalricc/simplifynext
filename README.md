@@ -10,7 +10,27 @@ Software AI track. The official kick-off stack — **MCP, AWS Bedrock AgentCore,
 
 Anyone who signs up. A creator makes an account, answers a short onboarding form, and the agents plan their week against **their** niche, city, voice and constraints.
 
-Maya Tan is the seed persona used in the demo and the tests — Singapore home-cook / hawker-style TikTok + Instagram, 3 posts a week, chasing a first small local brand deal. She is now an ordinary account created by [`scripts/seed_demo_user.py`](scripts/seed_demo_user.py) from [`demo/maya/profile.json`](demo/maya/profile.json); no service special-cases her.
+### Demo personas
+
+Three creators ship as demo accounts. Each is an ordinary user — no service special-cases them — and each tells a different story on the board:
+
+| Persona | Sign in as | Niche | The brand deal | The critique catches |
+|---|---|---|---|---|
+| **Maya Tan** `@mayacooks.sg` | `maya@creatorloop.local` | Hawker-style home cooking | Laksa Lab paste | An unsourced calorie claim |
+| **Henry Lim** `@henrypulls` | `henry@creatorloop.local` | Pokémon openings and grading | Orchard Card Bar | An invented pull rate |
+| **John Tan** `@johnthrifts` | `john@creatorloop.local` | Thrift flipping and resale | Loop Vintage | A made-up resale valuation |
+
+Password for all three: `creatorloop-demo`.
+
+```bash
+python scripts/seed_demo_user.py           # all three
+python scripts/seed_demo_user.py henry     # just one
+python scripts/seed_demo_user.py --list
+```
+
+Each runs the same arc — plan a week, fail the critique, rewrite, send outreach, then adapt from week-2 replies — with its own opportunities, voice, brand targets and failure mode. Switching persona on camera is a sign-out and a sign-in.
+
+**Adding a fourth is adding a directory.** Copy `demo/henry/` to `demo/<name>/`, edit the JSON, re-run the seed script. [`shared/fixtures.py`](shared/fixtures.py) documents the file layout and the small rules format that lets an agent branch on its prompt — which is how the fail-then-fix beat works. `pytest tests/test_personas.py` checks a new persona has every file, defines every agent the graph calls, selects opportunity ids that exist, and actually fails then passes its critique.
 
 ## Run it
 
@@ -39,7 +59,7 @@ Then open [http://localhost:8000](http://localhost:8000), create an account, and
 
 ```bash
 python scripts/seed_demo_user.py
-# demo@creatorloop.local / creatorloop-demo
+# maya@ / henry@ / john@creatorloop.local — password creatorloop-demo
 ```
 
 ### What costs money

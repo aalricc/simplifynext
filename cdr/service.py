@@ -16,6 +16,7 @@ from cdr.runtime import (
     new_run,
     set_current_run,
 )
+from shared.fixtures import use_persona_of
 from shared.tenant import current_profile, require_profile, set_profile
 
 OUTBOX = Path(__file__).resolve().parents[1] / "demo" / "outbox" / "cdr"
@@ -100,6 +101,9 @@ async def execute_run(run_id: str, body: dict) -> None:
     # every outbound MCP and Pipeline call goes out unauthenticated and the
     # run's results are silently dropped.
     set_profile(str(profile.get("id", "")))
+    # Pick the demo persona this creator maps onto, so a fixture run tells
+    # their story rather than Maya's. No effect when USE_FIXTURES=0.
+    use_persona_of(profile)
 
     opps = opportunities_from(body)
     emit_agui(

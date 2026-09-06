@@ -19,7 +19,10 @@ from pathlib import Path
 from typing import Any
 
 from pipeline_manager import db
+from shared.fixtures import DEMO
 
+# Kept for callers that still import it; per-persona paths come from
+# shared.fixtures.persona_file(), which falls back to Maya.
 MAYA = Path(__file__).resolve().parents[1] / "demo" / "maya"
 
 
@@ -112,9 +115,9 @@ def _read(path: Path, default: Any) -> Any:
     return json.loads(path.read_text()) if path.exists() else default
 
 
-def maya_profile_form() -> dict[str, Any]:
-    """`demo/maya/profile.json` in the shape `auth.create_profile` expects."""
-    raw = _read(MAYA / "profile.json", {})
+def persona_profile_form(persona: str = "maya") -> dict[str, Any]:
+    """A persona's `profile.json` in the shape `auth.create_profile` expects."""
+    raw = _read(DEMO / persona / "profile.json", {})
     constraints = raw.get("constraints") or {}
     return {
         "handle": (raw.get("handle") or "@mayacooks.sg").lstrip("@"),
@@ -137,9 +140,9 @@ def maya_profile_form() -> dict[str, Any]:
     }
 
 
-async def load_maya_corpus() -> int:
-    """`demo/maya/rag_corpus.json` -> rag_documents for the current profile."""
-    data = _read(MAYA / "rag_corpus.json", {})
+async def load_persona_corpus(persona: str = "maya") -> int:
+    """A persona's `rag_corpus.json` -> rag_documents for the current profile."""
+    data = _read(DEMO / persona / "rag_corpus.json", {})
     docs = data.get("documents", []) if isinstance(data, dict) else data
     count = 0
     for doc in docs:
@@ -159,8 +162,8 @@ async def load_maya_corpus() -> int:
     return count
 
 
-async def load_maya_inbox() -> int:
-    data = _read(MAYA / "inbox.json", {"items": []})
+async def load_persona_inbox(persona: str = "maya") -> int:
+    data = _read(DEMO / persona / "inbox.json", {"items": []})
     count = 0
     for item in data.get("items", []):
         payload = {k: v for k, v in item.items() if k not in ("source", "opportunity_id")}
@@ -173,8 +176,10 @@ async def load_maya_inbox() -> int:
     return count
 
 
-async def load_maya_analytics(median_views: int | None = None) -> int:
-    data = _read(MAYA / "analytics_week1.json", {"posts": []})
+async def load_persona_analytics(
+    persona: str = "maya", median_views: int | None = None
+) -> int:
+    data = _read(DEMO / persona / "analytics_week1.json", {"posts": []})
     week = int(data.get("week") or 1)
     count = 0
     for post in data.get("posts", []):
@@ -191,3 +196,10 @@ async def load_maya_analytics(median_views: int | None = None) -> int:
         )
         count += 1
     return count
+
+
+# Back-compat aliases. The demo used to be Maya-only.
+maya_profile_form = persona_profile_form
+load_maya_corpus = load_persona_corpus
+load_maya_inbox = load_persona_inbox
+load_maya_analytics = load_persona_analytics

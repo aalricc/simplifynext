@@ -1,0 +1,53 @@
+{
+  "_note": "Fixture corpus for the MCP search_web tool. Matched by keyword overlap against the query. Same shape as the live Tavily adapter: {title, url, snippet, published, source}.",
+  "results": [
+    {
+      "title": "Repack listings surge on local marketplaces",
+      "url": "https://example.local/trend/repack-honesty",
+      "snippet": "Carousell listings for Pokémon 'repacks' have roughly doubled month on month in Singapore. Buyers report wildly inconsistent contents, and almost no creator has filmed an honest verdict on one.",
+      "published": "2026-08-04",
+      "source": "trendwatch",
+      "keywords": ["repack", "base set", "carousell", "worth it", "verdict", "scam"]
+    },
+    {
+      "title": "Grading turnaround times drop across Asia",
+      "url": "https://example.local/trend/grading-turnaround",
+      "snippet": "Submission-to-return times have fallen sharply this quarter, pushing a wave of 'my grades are back' reveal content. Reveal formats hold retention far better than static price talk.",
+      "published": "2026-08-01",
+      "source": "trendwatch",
+      "keywords": ["grading", "psa", "turnaround", "submission", "reveal", "gradehouse"]
+    },
+    {
+      "title": "Card shops are invisible on short-form",
+      "url": "https://example.local/brand/orchard-card-bar",
+      "snippet": "A survey of Singapore card shops found most run an Instagram of static shelf photos and post no video. Shops with weekend footfall and no video are the clearest creator-partnership gap in the hobby.",
+      "published": "2026-07-28",
+      "source": "retailwatch",
+      "keywords": ["card shop", "orchard", "short form", "instagram", "brand gap", "sponsorship"]
+    },
+    {
+      "title": "New grading service opens in Paya Lebar",
+      "url": "https://example.local/brand/gradehouse",
+      "snippet": "GradeHouse Asia has opened submissions locally. Newer services compete on trust rather than price, which makes explainer content unusually valuable to them.",
+      "published": "2026-07-22",
+      "source": "retailwatch",
+      "keywords": ["gradehouse", "grading", "paya lebar", "collab", "trust", "walkthrough"]
+    },
+    {
+      "title": "Audiences punish invented pull rates",
+      "url": "https://example.local/audience/pull-rate-trust",
+      "snippet": "Comment analysis on opening videos shows sharp negative sentiment when creators quote odds that manufacturers never published. Videos that explicitly decline to guess outperform on saves.",
+      "published": "2026-07-15",
+      "source": "audiencelab",
+      "keywords": ["pull rate", "odds", "trust", "honest", "audience", "comments"]
+    },
+    {
+      "title": "Deck tutorials lose to openings on retention",
+      "url": "https://example.local/audience/deck-vs-openings",
+      "snippet": "Across the TCG category, instructional deck content retains roughly a third as well as opening and reveal content on short-form. Creators report tutorials rarely convert to follows.",
+      "published": "2026-07-08",
+      "source": "audiencelab",
+      "keywords": ["deck", "tutorial", "meta", "retention", "underperform"]
+    }
+  ]
+}

@@ -181,6 +181,20 @@ def test_expired_and_malformed_tokens_are_rejected():
         assert not tenant.verify_token(pid, bad)
 
 
-def test_outbound_headers_are_empty_without_a_profile():
+def test_outbound_headers_carry_no_credentials_without_a_profile():
+    """No profile means no tenant identity on the wire.
+
+    The persona header may still be present -- it only selects which checked-in
+    demo fixtures to serve and authorises nothing -- so assert on the two
+    headers that actually grant access.
+    """
     tenant.set_profile("")
-    assert tenant.outbound_headers() == {}
+    headers = tenant.outbound_headers()
+    assert tenant.PROFILE_HEADER not in headers
+    assert tenant.TOKEN_HEADER not in headers
+
+
+def test_persona_header_is_absent_when_not_running_fixtures(monkeypatch):
+    monkeypatch.setenv("USE_FIXTURES", "0")
+    tenant.set_profile(str(uuid.uuid4()))
+    assert tenant.PERSONA_HEADER not in tenant.outbound_headers()

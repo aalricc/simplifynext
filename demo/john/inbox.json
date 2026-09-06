@@ -1,0 +1,13 @@
+{
+  "items": [
+    {
+      "id": "mail-001",
+      "source": "email",
+      "opportunity_id": "opp-john-brand-gap-loop",
+      "from": "mei@loopvintage.sg",
+      "subject": "Re: John x Loop Vintage — 3 honest rail walks",
+      "body": "Hi John, we saw the SGD 4 shirt flip — showing the stain first is exactly the tone we want. We're keen on a 3-post trial in store next month. Can we hop on a 15-min call?",
+      "label_hint": "interested"
+    }
+  ]
+}

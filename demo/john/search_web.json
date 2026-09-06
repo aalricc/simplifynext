@@ -1,0 +1,53 @@
+{
+  "_note": "Fixture corpus for the MCP search_web tool. Matched by keyword overlap against the query. Same shape as the live Tavily adapter: {title, url, snippet, published, source}.",
+  "results": [
+    {
+      "title": "Flaw-first hauls outperform polished try-ons",
+      "url": "https://example.local/trend/flaw-first",
+      "snippet": "Secondhand creators who open on the damage — stains, pilling, missing buttons — are seeing markedly higher saves than those who cut straight to the styled fit. Audiences read hidden condition as a sales tactic.",
+      "published": "2026-08-05",
+      "source": "trendwatch",
+      "keywords": ["flaw", "stain", "condition", "haul", "before after", "honest", "thrift flip"]
+    },
+    {
+      "title": "Resale apps push local drops, restock content peaks",
+      "url": "https://example.local/trend/restock-drops",
+      "snippet": "Marketplace pushes for scheduled local drops have made 'restock' a repeatable weekly format. Creators who name what did not sell report higher trust and steadier follower growth.",
+      "published": "2026-08-02",
+      "source": "trendwatch",
+      "keywords": ["restock", "rail", "drop", "resale", "carousell", "depop", "sold"]
+    },
+    {
+      "title": "Vintage stores are invisible on short-form",
+      "url": "https://example.local/brand/loop-vintage",
+      "snippet": "A sweep of Singapore vintage stores found most run an Instagram of flat-lay stills and post no fitting-room video. Stores with strong curation and no video are the clearest creator-partnership gap in resale.",
+      "published": "2026-07-27",
+      "source": "retailwatch",
+      "keywords": ["vintage store", "haji lane", "loop", "short form", "brand gap", "partnership", "rail"]
+    },
+    {
+      "title": "Garment care services have no creator content",
+      "url": "https://example.local/brand/refresh-laundry",
+      "snippet": "Specialist cleaning and repair services report most enquiries come from secondhand buyers, yet almost none work with creators. Stain-removal demonstrations are among the most requested formats in resale comments.",
+      "published": "2026-07-21",
+      "source": "retailwatch",
+      "keywords": ["laundry", "garment care", "clean", "stain", "repair", "collab", "refresh"]
+    },
+    {
+      "title": "Audiences punish invented resale valuations",
+      "url": "https://example.local/audience/valuation-trust",
+      "snippet": "Comment analysis on flip content shows sharp negative sentiment when creators quote resale prices they never achieved. Videos that show the actual sold listing outperform on saves and comments.",
+      "published": "2026-07-14",
+      "source": "audiencelab",
+      "keywords": ["resells for", "valuation", "worth", "sold price", "trust", "honest", "flip"]
+    },
+    {
+      "title": "Organisation content loses to flips on retention",
+      "url": "https://example.local/audience/organisation-vs-flips",
+      "snippet": "Across the secondhand category, wardrobe organisation and folding content retains roughly a third as well as flip and restock content. Creators report it rarely converts to follows or sales.",
+      "published": "2026-07-06",
+      "source": "audiencelab",
+      "keywords": ["wardrobe", "organisation", "folding", "inspo", "retention", "underperform"]
+    }
+  ]
+}

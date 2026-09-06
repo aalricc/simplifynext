@@ -36,6 +36,11 @@ import time
 
 PROFILE_HEADER = "X-CreatorLoop-Profile"
 TOKEN_HEADER = "X-CreatorLoop-Token"
+# Which demo persona's canned data to serve. Only read when USE_FIXTURES=1, and
+# unsigned on purpose: it selects between checked-in demo files, so the worst a
+# forged value can do is show you the wrong demo. It rides here because a
+# fixture run spans all six services and `search_web` gets no profile argument.
+PERSONA_HEADER = "X-CreatorLoop-Persona"
 
 # How long a minted internal token stays valid. Long enough for a full campaign
 # run (the README says 3-5 minutes), short enough that a leaked header from a
@@ -133,7 +138,14 @@ def outbound_headers(profile_id: str | None = None) -> dict[str, str]:
     `shared/http_clients.py` and `cdr/mcp_client.py` call this, so adding a new
     outbound call site does not mean remembering to propagate tenancy.
     """
+    from shared.fixtures import current_persona
+    from shared.flags import use_fixtures
+
     pid = profile_id or current_profile()
-    if not pid:
-        return {}
-    return {PROFILE_HEADER: pid, TOKEN_HEADER: mint_token(pid)}
+    headers: dict[str, str] = {}
+    if pid:
+        headers[PROFILE_HEADER] = pid
+        headers[TOKEN_HEADER] = mint_token(pid)
+    if use_fixtures():
+        headers[PERSONA_HEADER] = current_persona()
+    return headers

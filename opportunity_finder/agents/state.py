@@ -18,6 +18,7 @@ from typing import Annotated, Any, TypedDict
 
 from pydantic import BaseModel, Field
 
+from shared.fixtures import use_persona_of
 from shared.schemas import CreatorProfile, Opportunity, OpportunityStatus, OpportunityType
 
 DEMO = Path(__file__).resolve().parents[2] / "demo" / "maya"
@@ -133,6 +134,8 @@ def load_profile(profile: dict[str, Any] | None = None) -> CreatorProfile:
     data.setdefault("name", data.get("display_name", ""))
     if not data.get("id"):
         raise ProfileMissing("Creator profile has no id.")
+    # Fixture mode serves this creator's demo data, not Maya's. No-op live.
+    use_persona_of(data)
     return CreatorProfile(**data)
 
 

@@ -1,0 +1,26 @@
+{
+  "week": 1,
+  "posts": [
+    {
+      "id": "post-flaw-flip",
+      "title": "SGD 6 jacket, stain first",
+      "views": 26800,
+      "saves": 1450,
+      "avg_watch_pct": 66
+    },
+    {
+      "id": "post-restock",
+      "title": "Rail restock: what sold, what didn't",
+      "views": 14200,
+      "saves": 610,
+      "avg_watch_pct": 55
+    },
+    {
+      "id": "post-organise",
+      "title": "Wardrobe organisation",
+      "views": 2600,
+      "saves": 38,
+      "avg_watch_pct": 22
+    }
+  ]
+}

@@ -17,7 +17,9 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from shared.fixtures import reset_persona, set_persona
 from shared.tenant import (
+    PERSONA_HEADER,
     PROFILE_HEADER,
     TOKEN_HEADER,
     TenantError,
@@ -48,7 +50,13 @@ def add_cors(app: FastAPI) -> None:
         allow_origins=allowed_origins(),
         allow_credentials=True,
         allow_methods=["GET", "POST", "OPTIONS"],
-        allow_headers=["Content-Type", "Accept", PROFILE_HEADER, TOKEN_HEADER],
+        allow_headers=[
+            "Content-Type",
+            "Accept",
+            PROFILE_HEADER,
+            TOKEN_HEADER,
+            PERSONA_HEADER,
+        ],
     )
 
 
@@ -79,9 +87,13 @@ def add_tenant_middleware(app: FastAPI) -> None:
         # Unset rather than empty-string, so require_profile() raises with its
         # own message instead of querying for profile_id = ''.
         ctx = set_profile(profile_id)
+        # Which demo persona's fixtures this request should see. Ignored unless
+        # USE_FIXTURES=1, and it only picks between checked-in demo files.
+        persona_ctx = set_persona(request.headers.get(PERSONA_HEADER, ""))
         try:
             return await call_next(request)
         finally:
+            reset_persona(persona_ctx)
             reset_profile(ctx)
 
 

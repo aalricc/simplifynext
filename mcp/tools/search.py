@@ -20,12 +20,19 @@ from typing import Any
 import httpx
 
 from mcp.tools import tool
+from shared.fixtures import persona_dir, persona_file
 from shared.flags import use_fixtures
 from shared.tenant import current_profile
 
-DEMO = Path(__file__).resolve().parents[2] / "demo" / "maya"
-SEARCH_FIXTURE = DEMO / "search_web.json"
-PLACES_FIXTURE = DEMO / "places_sg_food.json"
+# Resolved per demo persona, not pinned to Maya -- see shared/fixtures.py.
+def _search_fixture() -> Path:
+    return persona_file("search_web.json")
+
+
+def _places_fixture() -> Path:
+    # Maya's file predates the per-persona layout and keeps its original name.
+    path = persona_dir() / "places.json"
+    return path if path.exists() else persona_file("places_sg_food.json")
 
 FETCH_TIMEOUT = 10.0
 FETCH_MAX_BYTES = 500_000
@@ -85,7 +92,7 @@ async def _search_web_live(query: str, limit: int) -> list[dict[str, Any]]:
 
 def _search_web_fixture(query: str, limit: int) -> list[dict[str, Any]]:
     """Keyword-overlap ranking over the demo corpus."""
-    corpus = _load(SEARCH_FIXTURE, {}).get("results", [])
+    corpus = _load(_search_fixture(), {}).get("results", [])
     q = _tokens(query)
 
     scored: list[tuple[int, dict[str, Any]]] = []
@@ -145,7 +152,7 @@ async def search_local_places(
     `has_short_form=False` is the BrandGapAgent path: brands with a real product
     and no short-form presence.
     """
-    places: list[dict[str, Any]] = _load(PLACES_FIXTURE, [])
+    places: list[dict[str, Any]] = _load(_places_fixture(), [])
 
     if city:
         places = [p for p in places if p.get("city", "").lower() == city.lower()]
@@ -179,7 +186,7 @@ def _html_to_text(html: str) -> str:
 
 def _fetch_from_fixture(url: str) -> dict[str, Any] | None:
     """Serve seed evidence_urls (example.local) out of the search corpus."""
-    for doc in _load(SEARCH_FIXTURE, {}).get("results", []):
+    for doc in _load(_search_fixture(), {}).get("results", []):
         if doc.get("url") == url:
             return {
                 "url": url,
