@@ -64,7 +64,12 @@ MAX_ATTEMPTS = 3
 # purpose: the hackathon sandbox is capped at US$20 and revokes access there,
 # so the cheapest model that can do the job is the right default. Override with
 # BEDROCK_MODEL_ID if a specific agent needs more.
-BEDROCK_MODEL = os.getenv("BEDROCK_MODEL_ID", "anthropic.claude-haiku-4-5")
+BEDROCK_MODEL = os.getenv(
+    # Bedrock wants the full inference-profile id. The short name
+    # "anthropic.claude-haiku-4-5" returns "The provided model identifier
+    # is invalid." The us. prefix is the cross-region profile.
+    "BEDROCK_MODEL_ID", "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+)
 # Bedrock inference for these models lives in us-east-1. This is NOT the SSO
 # region from the access portal (ap-southeast-1) -- using that one returns a
 # wall of `Access denied to bedrock:*`.
@@ -135,8 +140,18 @@ def _client():
 
 
 def _bedrock_client():
-    """Messages-API Bedrock client, signed with the sandbox's temporary keys."""
-    from anthropic import AsyncAnthropicBedrockMantle
+    """Messages-API Bedrock client, signed with the sandbox's temporary keys.
+
+    `AsyncAnthropicBedrock`, not `AsyncAnthropicBedrockMantle`. The Mantle
+    client calls `bedrock-mantle:CreateInference`, which the hackathon sandbox
+    denies outright in a service control policy:
+
+        not authorized to perform: bedrock-mantle:CreateInference
+        ... with an explicit deny in a service control policy
+
+    The standard client uses `bedrock:InvokeModel`, which the sandbox allows.
+    """
+    from anthropic import AsyncAnthropicBedrock
 
     kwargs: dict[str, Any] = {"aws_region": AWS_REGION}
     # Pass explicitly when present; otherwise let the SDK walk the normal AWS
@@ -148,7 +163,7 @@ def _bedrock_client():
             kwargs["aws_session_token"] = _env("AWS_SESSION_TOKEN")
     elif _env("AWS_PROFILE"):
         kwargs["aws_profile"] = _env("AWS_PROFILE")
-    return AsyncAnthropicBedrockMantle(**kwargs)
+    return AsyncAnthropicBedrock(**kwargs)
 
 
 def _retry_delay(exc: Exception, attempt: int) -> float:
