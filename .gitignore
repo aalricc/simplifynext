@@ -1,11 +1,57 @@
 node_modules/
 dist/
-.env
 __pycache__/
 *.py[cod]
-*.db
 .venv/
 .uat_pids.txt
+
+# ---------------------------------------------------------------------------
+# Secrets
+# ---------------------------------------------------------------------------
+# `.env` alone did not cover the variants people actually create when they are
+# in a hurry -- .env.local, .env.bak, a copy saved before pasting new AWS keys.
+# Ignore every .env* and re-allow only the checked-in template.
+.env
+.env.*
+!.env.example
+
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+secrets.json
+creds.json
+credentials.json
+aws.json
+*.credentials
+
+# ---------------------------------------------------------------------------
+# Local data and scratch
+# ---------------------------------------------------------------------------
+# Databases hold password hashes and session tokens. Never commit one.
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+dump.sql
+*.dump
+
+*.log
+cookies.txt
+.coverage
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# macOS / editors
+.DS_Store
+Thumbs.db
+*.swp
+*~
 
 # Per-run agent output. The directories are tracked via .gitkeep; what the
 # runs drop in them is not.
